@@ -17,8 +17,18 @@
 #define ApplicationHeadless_HPP_
 
 #include <QObject>
+#include <QTime>
 #include <QFileSystemWatcher>
 #include <wifi/wifi_service.h>
+#include <bb/platform/NotificationMode>
+
+struct BedsideSettings{
+	bool w_connections;
+	bb::platform::NotificationMode mode;
+	QTime from;
+	QTime to;
+};
+
 namespace bb
 {
     class Application;
@@ -37,13 +47,6 @@ namespace bb
     }
 }
 
-/*!
- * @brief Class which represents the headless service
- * 	      that initializes a Led object and starts it
- * 	      with a Color c and count x.
- *
- */
-//! [0]
 class ApplicationHeadless: public QObject
 {
     Q_OBJECT
@@ -104,6 +107,10 @@ private:
     static const QString m_serviceStatus;
     static const QString m_ledActive;
     static const QString m_reset;
+    static const bool m_daily;
+    static const BedsideSettings m_bssettings;
+    static const BedsideSettings m_cursettings;
+
     // The Led instance
     bb::device::Led *m_led;
     // flash count holder
@@ -111,5 +118,5 @@ private:
     // Watcher for qsettigns file changes
     QFileSystemWatcher* m_settingsWatcher;
 };
-//! [0]
+
 #endif /* ApplicationHeadless_HPP_ */

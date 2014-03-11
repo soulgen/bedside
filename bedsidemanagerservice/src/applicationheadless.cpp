@@ -21,14 +21,11 @@
 #include <bb/system/InvokeRequest>
 #include <QDebug>
 #include <bb/platform/NotificationGlobalSettings>
-#include <bb/platform/NotificationMode>
 #include <bb/device/WiFiDirect>
 #include <wifi/wifi_service.h>
 
-
-//! [0]
 const QString ApplicationHeadless::m_author = "Teleca"; // for creating settings
-const QString ApplicationHeadless::m_appName = "BedsideManagerServiceApp"; // for creating settings
+const QString ApplicationHeadless::m_appName = "BedsideManagerApp"; // for creating settings
 
 // keys for setting file
 const QString ApplicationHeadless::m_serviceStatus = "ServiceStatus";
@@ -36,13 +33,11 @@ const QString ApplicationHeadless::m_flashNumber = "FlashCount";
 const QString ApplicationHeadless::m_remainingCount = "RemainingFlashCount";
 const QString ApplicationHeadless::m_ledActive = "ActiveLed";
 const QString ApplicationHeadless::m_reset = "Reset";
-//! [0]
+
 using namespace bb::device;
 using namespace bb::system;
 using namespace bb::platform;
 
-
-//! [1]
 ApplicationHeadless::ApplicationHeadless(bb::Application *app)
     : QObject(app)
     , m_invokeManager(new InvokeManager(this))
@@ -51,16 +46,11 @@ ApplicationHeadless::ApplicationHeadless(bb::Application *app)
     , m_flashCount(20)
     , m_settingsWatcher(new QFileSystemWatcher(this))
 {
-
     QMetaObject::invokeMethod(this, "init", Qt::QueuedConnection);
     // log the service PID
     qDebug() << "PID------------" << QString::number(QCoreApplication::applicationPid());
-
-
-
 }
-//! [1]
-//! [3]
+
 void ApplicationHeadless::onInvoked(const bb::system::InvokeRequest& request)
 {
     qDebug() << "##service got invoked: " << request.action();
@@ -74,8 +64,7 @@ void ApplicationHeadless::onInvoked(const bb::system::InvokeRequest& request)
         settings.setValue(m_serviceStatus, request.action());
     }
 }
-//! [3]
-//! [4]
+
 void ApplicationHeadless::flashCountChanged(int x)
 {
    // WiFiDirect wifisettings;

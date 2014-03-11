@@ -17,6 +17,15 @@
 
 #include <QObject>
 #include <QFileSystemWatcher>
+#include <QTime>
+#include <bb/platform/NotificationMode>
+
+struct BedsideSettings{
+	bool w_connections;
+	bb::platform::NotificationMode mode;
+	QTime from;
+	QTime to;
+};
 
 namespace bb
 {
@@ -80,6 +89,9 @@ private:
     static const QString m_remainingCount;
     static const QString m_reset;
     static const QString m_serviceStatus;
+    static const bool m_daily;
+    static const BedsideSettings m_bssettings;
+    static const BedsideSettings m_cursettings;
 
     QTranslator* m_pTranslator;
     bb::cascades::LocaleHandler* m_pLocaleHandler;
