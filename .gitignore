@@ -1,0 +1,6 @@
+*.ts
+*.qm
+*.pri
+bedsidemanagerservice/arm
+bedsidemanagerui/arm
+
