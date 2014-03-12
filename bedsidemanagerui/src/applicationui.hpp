@@ -1,31 +1,19 @@
-/* Copyright (c) 2013 BlackBerry Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 #ifndef ApplicationUI_HPP_
 #define ApplicationUI_HPP_
 
 #include <QObject>
 #include <QFileSystemWatcher>
-#include <QTime>
+#include <QDateTime>
 #include <bb/platform/NotificationMode>
 
 struct BedsideSettings{
 	bool w_connections;
-	bb::platform::NotificationMode mode;
-	QTime from;
-	QTime to;
+	int mode;
+	QDateTime from;
+	QDateTime to;
 };
+
+Q_DECLARE_METATYPE(BedsideSettings)
 
 namespace bb
 {
@@ -38,24 +26,17 @@ namespace bb
 
 class QTranslator;
 
-/*!
- * @brief Class which represents the headless service UI
- * 	      that communicates with the headless service via
- * 	      QSettings to retrieve service values such as, status
- * 	      and current Led values.
- *
- */
-//! [0]
 class ApplicationHeadless: public QObject
 {
     Q_OBJECT
     // property holding value for remaining flash count
-    Q_PROPERTY(int remainingFlashCount READ remainingFlashCount WRITE setRemainingFlashCount NOTIFY remainingFlashCountChanged)
+    //Q_PROPERTY(int remainingFlashCount READ remainingFlashCount WRITE setRemainingFlashCount NOTIFY remainingFlashCountChanged)
 
 public:
     ApplicationHeadless(bb::cascades::Application *app);
     virtual ~ApplicationHeadless() {}
-    Q_INVOKABLE void resetLED();
+    //Q_INVOKABLE void save();
+    //Q_INVOKABLE void cancel();
 
 Q_SIGNALS:
     // Emitted when the remaining flash count value has changed
@@ -76,22 +57,31 @@ public Q_SLOTS:
      */
     void settingsChanged(const QString & path);
 
-    /**
-     * Method to retrieve the number of times the Led
-     * was set to flash by reading this from the QSettings.
-     */
-    int flashCount();
+    bool getDaily();
+    void setDaily(bool);
+
+    bool getWConnections();
+    void setWConnections(bool);
+
+    int getNotificationMode();
+    void setNotificationMode(int);
+
+    QDateTime getTimeFrom();
+    void setTimeFrom(QDateTime);
+
+    QDateTime getTimeTo();
+    void setTimeTo(QDateTime);
+
+    void save();
+    void cancel();
 
 private:
     static const QString m_author; // for creating settings
     static const QString m_appName; // for creating settings
-    static const QString m_flashNumber;
-    static const QString m_remainingCount;
-    static const QString m_reset;
-    static const QString m_serviceStatus;
-    static const bool m_daily;
-    static const BedsideSettings m_bssettings;
-    static const BedsideSettings m_cursettings;
+    static const QString m_daily; // for daily check box
+    static const QString m_daily_settings; // for daily settings
+    static const QString m_current_settings; // for storing current settings
+    static const QString m_serviceStatus; // for checking service running
 
     QTranslator* m_pTranslator;
     bb::cascades::LocaleHandler* m_pLocaleHandler;
@@ -104,6 +94,8 @@ private:
     int remainingFlashCount();
     // Watcher for qsettigns file changes
     QFileSystemWatcher* settingsWatcher;
+
+    BedsideSettings unsaved_settings;
 };
-//! [0]
+
 #endif /* ApplicationUI_HPP_ */

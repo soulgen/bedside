@@ -18,12 +18,13 @@ Page {
                 CheckBox {
                     verticalAlignment: VerticalAlignment.Center
                     horizontalAlignment: HorizontalAlignment.Right
-                    checked: true
+                    checked: _app.getDaily()
                     onCheckedChanged: {
                         if(checked)
                             selectDay.visible = false;
                         else
                             selectDay.visible = true;
+                        _app.setDaily(checked)
                     }
                 }
             }
@@ -61,6 +62,10 @@ Page {
                 ToggleButton {
                     horizontalAlignment: HorizontalAlignment.Right
                     verticalAlignment: VerticalAlignment.Center
+                    checked: _app.getWConnections()
+                    onCheckedChanged: {
+                        _app.setWConnections(checked)
+                    }
                 }
             }
             Container {
@@ -147,6 +152,10 @@ Page {
                     DateTimePicker {
                         verticalAlignment: VerticalAlignment.Center
                         mode: DateTimePickerMode.Time
+                        value: _app.getTimeFrom()
+                        onValueChanged: {
+                            _app.setTimeFrom()
+                        }
                     }
                 }
                 Container {
@@ -162,6 +171,10 @@ Page {
                     DateTimePicker {
                         verticalAlignment: VerticalAlignment.Center
                         mode: DateTimePickerMode.Time
+                        value: _app.getTimeTo()
+                        onValueChanged: {
+                            _app.setTimeTo()
+                        }
                     }
                 }
             }
@@ -177,12 +190,18 @@ Page {
                 Button {
                     text: "Cancel"
                     horizontalAlignment: HorizontalAlignment.Left
-                    enabled: false
+                    //enabled: false
+                    onClicked: {
+                        _app.cancel()  
+                    }
                 }
                 Button {
                     text: "Save"
                     horizontalAlignment: HorizontalAlignment.Right
-                    enabled: false
+                    //enabled: false
+                    onClicked: {
+                      _app.save()  
+                    }
                 }
             }
         }
