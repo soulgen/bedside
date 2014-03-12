@@ -3,4 +3,5 @@
 *.pri
 bedsidemanagerservice/arm
 bedsidemanagerui/arm
+bedsidemanagerui/x86/
 
