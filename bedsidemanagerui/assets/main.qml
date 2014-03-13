@@ -97,7 +97,7 @@ Page {
                     horizontalAlignment: HorizontalAlignment.Right
                     verticalAlignment: VerticalAlignment.Center
                     title: "Mode:"
-                    selectedIndex: 1
+                    selectedIndex: _app.getNotificationMode()
                     onSelectedIndexChanged: {
                         if(selectedIndex == 0)
                             modeDescription.text = "The normal mode of operations for notifications. Custom settings are saved when switching out of this mode, and are restored when switching into this mode"
@@ -108,7 +108,8 @@ Page {
                         if(selectedIndex == 3)
                             modeDescription.text = "Deliver only phone related notifications" 
                         if(selectedIndex == 4)
-                            modeDescription.text = "Disable all notifications" 
+                            modeDescription.text = "Disable all notifications"
+                        _app.setNotificationMode(selectedIndex)
                     }
                     Option { text: "Normal " }
                     Option { text: "Silent" }
@@ -154,7 +155,7 @@ Page {
                         mode: DateTimePickerMode.Time
                         value: _app.getTimeFrom()
                         onValueChanged: {
-                            _app.setTimeFrom()
+                            _app.setTimeFrom(value)
                         }
                     }
                 }
@@ -173,7 +174,7 @@ Page {
                         mode: DateTimePickerMode.Time
                         value: _app.getTimeTo()
                         onValueChanged: {
-                            _app.setTimeTo()
+                            _app.setTimeTo(value)
                         }
                     }
                 }

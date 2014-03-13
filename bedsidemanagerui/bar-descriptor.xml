@@ -30,7 +30,7 @@
 
     <!-- The name that is displayed in the BlackBerry 10 application installer. 
          May have multiple values for each language. See samples or xsd schema file. Optional. -->
-    <name>bedsidemanagerui</name>
+    <name>headlesserviceui</name>
     
     <!-- A string value of the format <0-999>.<0-999>.<0-999> that represents application version which can be used to check for application upgrade. 
          Values can also be 1-part or 2-part. It is not necessary to have a 3-part value.
@@ -40,40 +40,40 @@
     <!-- Fourth digit segment of the package version. First three segments are taken from the 
          <versionNumber> element.  Must be an integer from 0 to 2^16-1 -->
     <buildId>1</buildId>
+    <author>SymphonyTeleca</author>
                  
     <!-- A string value (such as "v1", "2.5", or "Alpha 1") that represents the version of the application, as it should be shown to users. Optional. -->
     <!-- <versionLabel></versionLabel> -->
 
     <!-- Description, displayed in the BlackBerry 10 application installer.
          May have multiple values for each language. See samples or xsd schema file. Optional. -->
-    <description>The Bedside Manager UI application</description>
+    <description>The headlesserviceui application</description>
 
     <!-- Copyright information. Optional. -->
     <!-- <copyright></copyright> -->
 
     <!--  Name of author which is used for signing. Must match the developer name of your development certificate. -->
-    <author>lnosov</author>
-    <authorId>gYAAgAmju9gYpmRLqe6MObXRSw8</authorId>
+    <authorId>gYAAgLbILH5w-HUw6OldLy4wiQY</authorId>
     <configuration name="Device-Debug">
        <platformArchitecture>armle-v7</platformArchitecture>
-       <asset entryPointId="bedsidemanagerui" path="arm/o.le-v7-g/bedsidemanagerui" entry="true" type="Qnx/Elf">bedsidemanagerui</asset>
-       <asset entryPointId="bedsidemanagerservice" path="${workspace_loc:/bedsidemanagerservice/arm/bedsidemanagerservice}" type="Qnx/Elf">bedsidemanagerservice</asset>
+       <asset entryPointId="BedsidemanagerUi" path="arm/o.le-v7-g/bedsidemanagerui" entry="true" type="Qnx/Elf">bedsidemanagerui</asset>
+       <asset entryPointId="Bedsidemanagerservice" path="../bedsidemanagerservice/arm/bedsidemanagerservice" type="Qnx/Elf">bedsidemanagerservice</asset>
     </configuration>
     <configuration name="Device-Release">
        <entryPointType>Qnx/Cascades</entryPointType>
        <platformArchitecture>armle-v7</platformArchitecture>
-       <asset entryPointId="bedsidemanagerui" path="arm/o.le-v7/bedsidemanagerui.so" entry="true" type="Qnx/Elf">bedsidemanagerui.so</asset>
-       <asset entryPointId="bedsidemanagerservice" path="${workspace_loc:/bedsidemanagerservice/arm/bedsidemanagerservice}" type="Qnx/Elf">bedsidemanagerservice</asset>
+       <asset entryPointId="BedsidemanagerUi" path="arm/o.le-v7/bedsidemanagerui.so" entry="true" type="Qnx/Elf">bedsidemanagerui.so</asset>
+       <asset entryPointId="Bedsidemanagerservice" path="../bedsidemanagerservice/arm/bedsidemanagerservice" type="Qnx/Elf">bedsidemanagerservice</asset>
     </configuration>
     <configuration name="Device-Profile">
        <platformArchitecture>armle-v7</platformArchitecture>
-       <asset entryPointId="bedsidemanagerui" path="arm-p/o.le-v7-g/bedsidemanagerui" entry="true" type="Qnx/Elf">bedsidemanagerui</asset>
-       <asset entryPointId="bedsidemanagerservice" path="${workspace_loc:/bedsidemanagerservice/arm-p/bedsidemanagerservice}" type="Qnx/Elf">bedsidemanagerservice</asset>
+       <asset entryPointId="BedsidemanagerUi" path="arm-p/o.le-v7-g/bedsidemanagerui" entry="true" type="Qnx/Elf">bedsidemanagerui</asset>
+       <asset entryPointId="Bedsidemanagerservice" path="../bedsidemanagerservice/arm-p/bedsidemanagerservice" type="Qnx/Elf">bedsidemanagerservice</asset>
     </configuration>
     <configuration name="Simulator-Debug">
        <platformArchitecture>x86</platformArchitecture>
-       <asset entryPointId="bedsidemanagerui" path="x86/o-g/bedsidemanagerui" entry="true" type="Qnx/Elf">bedsidemanagerui</asset>
-       <asset entryPointId="bedsidemanagerservice" path="${workspace_loc:/bedsidemanagerservice/x86/bedsidemanagerservice}" type="Qnx/Elf">bedsidemanagerservice</asset>
+       <asset entryPointId="BedsidemanagerUi" path="x86/o-g/bedsidemanagerui" entry="true" type="Qnx/Elf">bedsidemanagerui</asset>
+       <asset entryPointId="Bedsidemanagerservice" path="../bedsidemanagerservice/x86/bedsidemanagerservice" type="Qnx/Elf">bedsidemanagerservice</asset>
     </configuration>
     
     <!--  Unique author ID assigned by signing authority. Required if using debug tokens. -->
@@ -98,18 +98,18 @@
         <include name="*.qm"/>
     </asset>
     
-    <entryPoint id="bedsidemanagerui">
-        <name>bedsidemanagerui</name>
+    <entryPoint id="BedsidemanagerUi">
+        <name>BedsidemanagerUi</name>
     </entryPoint>
-    <entryPoint id="bedsidemanagerservice">
-        <name>bedsidemanagerservice</name>
+    <entryPoint id="Bedsidemanagerservice">
+        <name>Bedsidemanagerservice</name>
         <entryPointType>Qnx/Elf</entryPointType>        
     </entryPoint> 
     
     <invoke-target id="com.example.bedsidemanagerservice">
-      <invoke-target-type>application.bedsidemanagerservice</invoke-target-type>
-       <invoke-target-name>Bedside Manager  Service</invoke-target-name>
-       <entry-point-id>bedsidemanagerservice</entry-point-id>
+      <invoke-target-type>application.headless</invoke-target-type>
+       <invoke-target-name>Bedsidemanager Service</invoke-target-name>
+       <entry-point-id>Bedsidemanagerservice</entry-point-id>
       <filter>
              <action>bb.action.system.STARTED</action>
              <mime-type>application/vnd.blackberry.system.event.STARTED</mime-type>

@@ -4,7 +4,9 @@
 #include <QObject>
 #include <QFileSystemWatcher>
 #include <QDateTime>
-#include <bb/platform/NotificationMode>
+#include <QMetaType>
+#include <QtCore/QDataStream>
+#include <QtCore/QSettings>
 
 struct BedsideSettings{
 	bool w_connections;
@@ -26,21 +28,13 @@ namespace bb
 
 class QTranslator;
 
-class ApplicationHeadless: public QObject
+class BedsideManagerUI: public QObject
 {
     Q_OBJECT
-    // property holding value for remaining flash count
-    //Q_PROPERTY(int remainingFlashCount READ remainingFlashCount WRITE setRemainingFlashCount NOTIFY remainingFlashCountChanged)
 
 public:
-    ApplicationHeadless(bb::cascades::Application *app);
-    virtual ~ApplicationHeadless() {}
-    //Q_INVOKABLE void save();
-    //Q_INVOKABLE void cancel();
-
-Q_SIGNALS:
-    // Emitted when the remaining flash count value has changed
-    void remainingFlashCountChanged();
+    BedsideManagerUI(bb::cascades::Application *app);
+    virtual ~BedsideManagerUI() {}
 
 public Q_SLOTS:
     /**
@@ -85,13 +79,7 @@ private:
 
     QTranslator* m_pTranslator;
     bb::cascades::LocaleHandler* m_pLocaleHandler;
-    // QTimer used to periodically read QSettings to retrieve
-    // new remaining flash count value
-    int m_remainingFlashCount;
-    // setter to store the new remaining flash count value
-    void setRemainingFlashCount(int x);
-    // Convenience method to retrieve remaining flash count.
-    int remainingFlashCount();
+
     // Watcher for qsettigns file changes
     QFileSystemWatcher* settingsWatcher;
 

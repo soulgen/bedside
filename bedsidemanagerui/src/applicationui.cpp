@@ -5,25 +5,38 @@
 #include <bb/cascades/AbstractPane>
 #include <bb/cascades/LocaleHandler>
 #include <QDebug>
-#include <QTimer>
 
-const QString ApplicationHeadless::m_author = "Teleca"; // for creating settings
-const QString ApplicationHeadless::m_appName = "BedsideManagerApp"; // for creating settings
+const QString BedsideManagerUI::m_author = "Teleca"; // for creating settings
+const QString BedsideManagerUI::m_appName = "BedsideManagerApp"; // for creating settings
 
 // keys for setting file
-const QString ApplicationHeadless::m_daily = "Daily";
-const QString ApplicationHeadless::m_daily_settings = "DailySettings";
-const QString ApplicationHeadless::m_current_settings = "CurrentSettings";
-const QString ApplicationHeadless::m_serviceStatus = "ServiceStatus";
+const QString BedsideManagerUI::m_daily = "Daily";
+const QString BedsideManagerUI::m_daily_settings = "DailySettings";
+const QString BedsideManagerUI::m_current_settings = "CurrentSettings";
+const QString BedsideManagerUI::m_serviceStatus = "ServiceStatus";
 
 using namespace bb::cascades;
 
-ApplicationHeadless::ApplicationHeadless(bb::cascades::Application *app)
+QDataStream& operator<<(QDataStream& out, const BedsideSettings& v) {
+    out << v.w_connections << v.mode << v.from << v.to;
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, BedsideSettings& v) {
+    in >> v.w_connections;
+    in >> v.mode;
+    in >> v.from;
+    in >> v.to;
+    return in;
+}
+
+BedsideManagerUI::BedsideManagerUI(bb::cascades::Application *app)
     : QObject(app)
 {
     // prepare the localization
     m_pTranslator = new QTranslator(this);
     m_pLocaleHandler = new LocaleHandler(this);
+    qRegisterMetaTypeStreamOperators<BedsideSettings>("BedsideSettings");
   //  qmlRegisterUncreatableType<bb::platform::NotificationGlobalSettings>("bb.platform", 1, 0, "NotificationGlobalSettings", "");
     QSettings settings(m_author, m_appName);
     // Force the creation of the settings file so that we can watch it for changes.
@@ -34,7 +47,6 @@ ApplicationHeadless::ApplicationHeadless(bb::cascades::Application *app)
     settingsWatcher->addPath(settings.fileName());
     connect(settingsWatcher, SIGNAL(fileChanged(const QString&)), this, SLOT(settingsChanged(const QString&)));
 
-    save();
     // initial load
     // Create scene document from main.qml asset, the parent is set
     // to ensure the document gets destroyed properly at shut down.
@@ -50,7 +62,7 @@ ApplicationHeadless::ApplicationHeadless(bb::cascades::Application *app)
     isServiceRunning();
 }
 
-bool ApplicationHeadless::isServiceRunning()
+bool BedsideManagerUI::isServiceRunning()
 {
     qDebug() << "check for service running via qsettings...";
     QSettings settings(m_author, m_appName);
@@ -66,7 +78,7 @@ bool ApplicationHeadless::isServiceRunning()
     return false;
 }
 
-bool ApplicationHeadless::getDaily()
+bool BedsideManagerUI::getDaily()
 {
     QSettings settings(m_author, m_appName);
     if (settings.contains(m_daily)) {
@@ -76,14 +88,14 @@ bool ApplicationHeadless::getDaily()
     return true;
 }
 
-void ApplicationHeadless::setDaily(bool checked)
+void BedsideManagerUI::setDaily(bool checked)
 {
     QSettings settings(m_author, m_appName);
     settings.setValue(m_daily, QVariant::fromValue(checked));
     qDebug() << "UI: setDaily(" << checked << ")";
 }
 
-bool ApplicationHeadless::getWConnections()
+bool BedsideManagerUI::getWConnections()
 {
     QSettings settings(m_author, m_appName);
     if (settings.contains(m_daily_settings)) {
@@ -97,13 +109,13 @@ bool ApplicationHeadless::getWConnections()
     return false;
 }
 
-void ApplicationHeadless::setNotificationMode(int mode)
+void BedsideManagerUI::setWConnections(bool checked)
 {
-	unsaved_settings.mode = mode;
-    qDebug() << "UI: setNotificationMode(" << mode << ")";
+	unsaved_settings.w_connections = checked;
+    qDebug() << "UI: setWConnections(" << checked << ")";
 }
 
-int ApplicationHeadless::getNotificationMode()
+int BedsideManagerUI::getNotificationMode()
 {
     QSettings settings(m_author, m_appName);
     if (settings.contains(m_daily_settings)) {
@@ -117,13 +129,19 @@ int ApplicationHeadless::getNotificationMode()
     return 0;
 }
 
-void ApplicationHeadless::setTimeFrom(QDateTime from)
+void BedsideManagerUI::setNotificationMode(int mode)
+{
+	unsaved_settings.mode = mode;
+    qDebug() << "UI: setNotificationMode(" << mode << ")";
+}
+
+void BedsideManagerUI::setTimeFrom(QDateTime from)
 {
 	unsaved_settings.from = from;
     qDebug() << "UI: setTimeFrom(" << from.toString() << ")";
 }
 
-QDateTime ApplicationHeadless::getTimeFrom()
+QDateTime BedsideManagerUI::getTimeFrom()
 {
     QSettings settings(m_author, m_appName);
     if (settings.contains(m_daily_settings)) {
@@ -134,16 +152,17 @@ QDateTime ApplicationHeadless::getTimeFrom()
     	    return set.from;
     	}
     }
-    return QDateTime();
+    qDebug() << QDateTime::currentDateTime().toString();
+    return QDateTime::currentDateTime();
 }
 
-void ApplicationHeadless::setTimeTo(QDateTime to)
+void BedsideManagerUI::setTimeTo(QDateTime to)
 {
 	unsaved_settings.to = to;
     qDebug() << "UI: setTimeTo(" << to.toString() << ")";
 }
 
-QDateTime ApplicationHeadless::getTimeTo()
+QDateTime BedsideManagerUI::getTimeTo()
 {
     QSettings settings(m_author, m_appName);
     if (settings.contains(m_daily_settings)) {
@@ -154,47 +173,38 @@ QDateTime ApplicationHeadless::getTimeTo()
     	    return set.to;
     	}
     }
-    return QDateTime();
+    qDebug() << QDateTime::currentDateTime().toString();
+    return QDateTime::currentDateTime();
 }
 
-void ApplicationHeadless::setWConnections(bool checked)
-{
-	unsaved_settings.w_connections = checked;
-    qDebug() << "UI: setWConnections(" << checked << ")";
-}
-
-void ApplicationHeadless::save()
+void BedsideManagerUI::save()
 {
     qDebug() << "save()";
     QSettings settings(m_author, m_appName);
     settings.setValue(m_daily_settings, QVariant::fromValue(unsaved_settings));
 }
 
-void ApplicationHeadless::cancel()
+void BedsideManagerUI::cancel()
 {
 	qDebug() << "cancel()";
 }
 
-//void ApplicationHeadless::setRemainingFlashCount(int x)
-//{
-//    m_remainingFlashCount = x;
-//    qDebug() << "emitting update signal flc";
-//    Q_EMIT remainingFlashCountChanged();
-//}
-
-//int ApplicationHeadless::remainingFlashCount()
-//{
-//    return m_remainingFlashCount;
-//}
-
-void ApplicationHeadless::settingsChanged(const QString & path)
+void BedsideManagerUI::settingsChanged(const QString & path)
 {
 	Q_UNUSED(path);
     qDebug() << "UI: Settings has been changed";
     QSettings settings(m_author, m_appName);
 
     if (settings.contains(m_daily)) {
-    	qDebug() << "m_daily = " << settings.value(m_daily).toBool();
+    	qDebug() << "UI: m_daily = " << settings.value(m_daily).toBool();
+    }
+    if (settings.contains(m_daily_settings)) {
+     	QVariant var = settings.value(m_daily_settings);
+   		BedsideSettings set = var.value<BedsideSettings>();
+   		qDebug() << "UI: w_connections = " << set.w_connections;
+   		qDebug() << "UI: mode = " << set.mode;
+   		qDebug() << "UI: From = " << set.from.toString();
+   		qDebug() << "UI: To = " << set.to.toString();
     }
 }
 

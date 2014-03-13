@@ -1,18 +1,3 @@
-/* Copyright (c) 2013 BlackBerry Limited.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #ifndef ApplicationHeadless_HPP_
 #define ApplicationHeadless_HPP_
 
@@ -24,10 +9,12 @@
 
 struct BedsideSettings{
 	bool w_connections;
-	bb::platform::NotificationMode mode;
-	QTime from;
-	QTime to;
+	int mode;
+	QDateTime from;
+	QDateTime to;
 };
+
+Q_DECLARE_METATYPE(BedsideSettings)
 
 namespace bb
 {
@@ -37,22 +24,18 @@ namespace bb
         class InvokeManager;
         class InvokeRequest;
     }
-    namespace device
-    {
-        class Led;
-    }
     namespace platform
     {
       class NotificationGlobalSettings;
     }
 }
 
-class ApplicationHeadless: public QObject
+class BedsideManagerService: public QObject
 {
     Q_OBJECT
 public:
-    ApplicationHeadless(bb::Application *app);
-    virtual ~ApplicationHeadless()
+    BedsideManagerService(bb::Application *app);
+    virtual ~BedsideManagerService()
     {
     }
 
@@ -70,7 +53,7 @@ public Q_SLOTS:
      * gets invoked upon receiving remainingFlashCountChanged() signal
      * from the Led instance.
      */
-    void flashCountChanged(int x);
+    //void flashCountChanged(int x);
 
     /**
      * Method hooked into the signal/slots mechanism, which
@@ -84,7 +67,7 @@ public Q_SLOTS:
      * received from the Led instance, indicating
      * a led state change.
      */
-    void activeUpdate(bool active);
+    //void activeUpdate(bool active);
 
     /**
      * Initialization method to create QSettings entries
@@ -98,23 +81,15 @@ private:
     bb::system::InvokeManager *m_invokeManager;
     bb::platform::NotificationGlobalSettings *m_glsettings;
     wifi_service_t *m_wifis;
-    static const QString m_author; // for creating settings
-    static const QString m_appName; // for creating settings
 
     // keys used in setting
-    static const QString m_flashNumber;
-    static const QString m_remainingCount;
-    static const QString m_serviceStatus;
-    static const QString m_ledActive;
-    static const QString m_reset;
-    static const bool m_daily;
-    static const BedsideSettings m_bssettings;
-    static const BedsideSettings m_cursettings;
+    static const QString m_author; // for creating settings
+    static const QString m_appName; // for creating settings
+    static const QString m_daily; // for daily check box
+    static const QString m_daily_settings; // for daily settings
+    static const QString m_current_settings; // for storing current settings
+    static const QString m_serviceStatus; // for checking service running
 
-    // The Led instance
-    bb::device::Led *m_led;
-    // flash count holder
-    int m_flashCount;
     // Watcher for qsettigns file changes
     QFileSystemWatcher* m_settingsWatcher;
 };
