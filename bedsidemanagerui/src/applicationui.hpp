@@ -5,6 +5,7 @@
 #include <QFileSystemWatcher>
 #include <QDateTime>
 #include <QMetaType>
+#include <bb/cascades/AbstractPane>
 #include <QtCore/QDataStream>
 #include <QtCore/QSettings>
 
@@ -23,6 +24,7 @@ namespace bb
     {
         class Application;
         class LocaleHandler;
+        class AbstractPane;
     }
 }
 
@@ -70,6 +72,11 @@ public Q_SLOTS:
     void cancel();
 
 private:
+
+    void readSettings();
+    void enableButtons();
+    void disableButtons();
+
     static const QString m_author; // for creating settings
     static const QString m_appName; // for creating settings
     static const QString m_daily; // for daily check box
@@ -77,6 +84,7 @@ private:
     static const QString m_current_settings; // for storing current settings
     static const QString m_serviceStatus; // for checking service running
 
+    bb::cascades::AbstractPane *root;
     QTranslator* m_pTranslator;
     bb::cascades::LocaleHandler* m_pLocaleHandler;
 
@@ -84,6 +92,7 @@ private:
     QFileSystemWatcher* settingsWatcher;
 
     BedsideSettings unsaved_settings;
+    BedsideSettings saved_settings;
 };
 
 #endif /* ApplicationUI_HPP_ */

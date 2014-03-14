@@ -2,7 +2,6 @@
 
 #include <bb/cascades/Application>
 #include <bb/cascades/QmlDocument>
-#include <bb/cascades/AbstractPane>
 #include <bb/cascades/LocaleHandler>
 #include <QDebug>
 
@@ -17,6 +16,8 @@ const QString BedsideManagerUI::m_serviceStatus = "ServiceStatus";
 
 using namespace bb::cascades;
 
+static bool sceneReady = false;
+
 QDataStream& operator<<(QDataStream& out, const BedsideSettings& v) {
     out << v.w_connections << v.mode << v.from << v.to;
     return out;
@@ -30,13 +31,15 @@ QDataStream& operator>>(QDataStream& in, BedsideSettings& v) {
     return in;
 }
 
+
 BedsideManagerUI::BedsideManagerUI(bb::cascades::Application *app)
     : QObject(app)
 {
     // prepare the localization
     m_pTranslator = new QTranslator(this);
     m_pLocaleHandler = new LocaleHandler(this);
-    qRegisterMetaTypeStreamOperators<BedsideSettings>("BedsideSettings");
+
+	qRegisterMetaTypeStreamOperators<BedsideSettings>("BedsideSettings");
   //  qmlRegisterUncreatableType<bb::platform::NotificationGlobalSettings>("bb.platform", 1, 0, "NotificationGlobalSettings", "");
     QSettings settings(m_author, m_appName);
     // Force the creation of the settings file so that we can watch it for changes.
@@ -55,11 +58,41 @@ BedsideManagerUI::BedsideManagerUI(bb::cascades::Application *app)
     // via properties, slots or invokable methods
     qml->setContextProperty("_app", this);
     // Create root object for the UI
-    AbstractPane *root = qml->createRootObject<AbstractPane>();
+    root = qml->createRootObject<AbstractPane>();
 
     // Set created root object as the application scene
     app->setScene(root);
+    sceneReady = true;
+
+    readSettings();
     isServiceRunning();
+}
+
+void BedsideManagerUI::readSettings()
+{
+    QVariant var;
+    saved_settings.w_connections = root->property("w_connections_checked").toBool();
+    saved_settings.mode = root->property("mode_index").toInt();
+    var = root->property("from_value");
+    saved_settings.from = var.value<QDateTime>();
+    var = root->property("to_value");
+    saved_settings.to = var.value<QDateTime>();
+}
+
+void BedsideManagerUI::enableButtons()
+{
+	if(sceneReady) {
+	    root->setProperty("save_enabled", true);
+	    root->setProperty("cancel_enabled", true);
+	}
+}
+
+void BedsideManagerUI::disableButtons()
+{
+	if(sceneReady) {
+	    root->setProperty("save_enabled", false);
+	    root->setProperty("cancel_enabled", false);
+	}
 }
 
 bool BedsideManagerUI::isServiceRunning()
@@ -111,7 +144,13 @@ bool BedsideManagerUI::getWConnections()
 
 void BedsideManagerUI::setWConnections(bool checked)
 {
-	unsaved_settings.w_connections = checked;
+	if(saved_settings.w_connections != checked)	{
+	    unsaved_settings.w_connections = checked;
+	    enableButtons();
+	}
+	else
+		disableButtons();
+
     qDebug() << "UI: setWConnections(" << checked << ")";
 }
 
@@ -131,14 +170,14 @@ int BedsideManagerUI::getNotificationMode()
 
 void BedsideManagerUI::setNotificationMode(int mode)
 {
-	unsaved_settings.mode = mode;
-    qDebug() << "UI: setNotificationMode(" << mode << ")";
-}
+	if(saved_settings.mode != mode)	{
+	    unsaved_settings.mode = mode;
+	    enableButtons();
+	}
+	else
+		disableButtons();
 
-void BedsideManagerUI::setTimeFrom(QDateTime from)
-{
-	unsaved_settings.from = from;
-    qDebug() << "UI: setTimeFrom(" << from.toString() << ")";
+    qDebug() << "UI: setNotificationMode(" << mode << ")";
 }
 
 QDateTime BedsideManagerUI::getTimeFrom()
@@ -152,14 +191,19 @@ QDateTime BedsideManagerUI::getTimeFrom()
     	    return set.from;
     	}
     }
-    qDebug() << QDateTime::currentDateTime().toString();
-    return QDateTime::currentDateTime();
+    return QDateTime(QDate::currentDate(), QTime(22, 0, 0));
 }
 
-void BedsideManagerUI::setTimeTo(QDateTime to)
+void BedsideManagerUI::setTimeFrom(QDateTime from)
 {
-	unsaved_settings.to = to;
-    qDebug() << "UI: setTimeTo(" << to.toString() << ")";
+	if(saved_settings.from != from)	{
+	    unsaved_settings.from = from;
+	    enableButtons();
+	}
+	else
+		disableButtons();
+
+    qDebug() << "UI: setTimeFrom(" << from.toString() << ")";
 }
 
 QDateTime BedsideManagerUI::getTimeTo()
@@ -173,8 +217,19 @@ QDateTime BedsideManagerUI::getTimeTo()
     	    return set.to;
     	}
     }
-    qDebug() << QDateTime::currentDateTime().toString();
-    return QDateTime::currentDateTime();
+    return QDateTime(QDate::currentDate(), QTime(6, 0, 0));
+}
+
+void BedsideManagerUI::setTimeTo(QDateTime to)
+{
+	if(saved_settings.to != to)	{
+	    unsaved_settings.to = to;
+	    enableButtons();
+	}
+	else
+		disableButtons();
+
+    qDebug() << "UI: setTimeTo(" << to.toString() << ")";
 }
 
 void BedsideManagerUI::save()
@@ -182,11 +237,18 @@ void BedsideManagerUI::save()
     qDebug() << "save()";
     QSettings settings(m_author, m_appName);
     settings.setValue(m_daily_settings, QVariant::fromValue(unsaved_settings));
+    readSettings();
+    disableButtons();
 }
 
 void BedsideManagerUI::cancel()
 {
 	qDebug() << "cancel()";
+    root->setProperty("w_connections_checked", saved_settings.w_connections);
+    root->setProperty("mode_index", saved_settings.mode);
+    root->setProperty("from_value", saved_settings.from);
+    root->setProperty("to_value", saved_settings.to);
+	disableButtons();
 }
 
 void BedsideManagerUI::settingsChanged(const QString & path)

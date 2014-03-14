@@ -1,9 +1,26 @@
 import bb.cascades 1.2
 
 Page {
+    property alias save_enabled: save.enabled
+    property alias cancel_enabled: cancel.enabled
+    property alias w_connections_checked: w_connections.checked
+    property alias mode_index: mode.selectedIndex
+    property alias from_value: from.value
+    property alias to_value: to.value
+    
     ScrollView {
         Container {
             topPadding: 30.0
+            background: back.imagePaint
+            attachedObjects: [
+                ImagePaintDefinition {
+                    id: back
+                    repeatPattern: RepeatPattern.XY
+                    imageSource: "asset:///images/bg.jpg"
+                }
+            ]
+            verticalAlignment: VerticalAlignment.Fill
+            horizontalAlignment: HorizontalAlignment.Fill
             Container {
                 layout: DockLayout {
                 }
@@ -16,6 +33,7 @@ Page {
                     textStyle.fontSize: FontSize.Medium
                 }
                 CheckBox {
+                    id: daily
                     verticalAlignment: VerticalAlignment.Center
                     horizontalAlignment: HorizontalAlignment.Right
                     checked: _app.getDaily()
@@ -33,8 +51,9 @@ Page {
                 leftPadding: 10.0
                 rightPadding: 10.0
                 topPadding: 20.0
-                visible: false
+                visible: !daily.checked
                 DropDown {
+                    selectedIndex: 0
                     title: "Select Day:"
                     Option { text: "Monday" }
                     Option { text: "Tuesday" }
@@ -60,6 +79,7 @@ Page {
                     textStyle.fontSize: FontSize.Medium
                 }
                 ToggleButton {
+                    id: w_connections
                     horizontalAlignment: HorizontalAlignment.Right
                     verticalAlignment: VerticalAlignment.Center
                     checked: _app.getWConnections()
@@ -93,6 +113,7 @@ Page {
                     textStyle.fontSize: FontSize.Medium
                 }
                 DropDown {
+                    id: mode
                     preferredWidth: 380
                     horizontalAlignment: HorizontalAlignment.Right
                     verticalAlignment: VerticalAlignment.Center
@@ -144,15 +165,12 @@ Page {
                     layoutProperties: StackLayoutProperties {
                         spaceQuota: 0.5
                     }
-                    rightMargin: 100.0
-                    Label {
-                        text: "From:"
-                        verticalAlignment: VerticalAlignment.Center
-                        textStyle.fontSize: FontSize.Medium
-                    }
+                    rightMargin: 40.0
                     DateTimePicker {
+                        id: from
                         verticalAlignment: VerticalAlignment.Center
                         mode: DateTimePickerMode.Time
+                        title: "From"
                         value: _app.getTimeFrom()
                         onValueChanged: {
                             _app.setTimeFrom(value)
@@ -163,15 +181,12 @@ Page {
                     layoutProperties: StackLayoutProperties {
                         spaceQuota: 0.5
                     }
-                    leftMargin: 100.0
-                    Label {
-                        text: "To:"
-                        verticalAlignment: VerticalAlignment.Center
-                        textStyle.fontSize: FontSize.Medium
-                    }
+                    leftMargin: 40.0
                     DateTimePicker {
+                        id: to
                         verticalAlignment: VerticalAlignment.Center
                         mode: DateTimePickerMode.Time
+                        title: "To"
                         value: _app.getTimeTo()
                         onValueChanged: {
                             _app.setTimeTo(value)
@@ -189,17 +204,19 @@ Page {
                 leftPadding: 10.0
                 rightPadding: 10.0
                 Button {
+                    id: cancel
                     text: "Cancel"
                     horizontalAlignment: HorizontalAlignment.Left
-                    //enabled: false
+                    enabled: false
                     onClicked: {
                         _app.cancel()  
                     }
                 }
                 Button {
+                    id: save
                     text: "Save"
                     horizontalAlignment: HorizontalAlignment.Right
-                    //enabled: false
+                    enabled: false
                     onClicked: {
                       _app.save()  
                     }
