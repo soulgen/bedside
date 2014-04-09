@@ -100,6 +100,8 @@
     <permission>access_notify_settings_control</permission>
     <permission>access_wifi_public</permission>
     <permission system="true">run_native</permission>
+    <permission system="true">_sys_run_headless</permission>
+    <permission system="true">_sys_headless_nostop</permission>
     <permission>control_phone</permission>
     <permission>access_phone</permission>
     <permission>access_internet</permission>

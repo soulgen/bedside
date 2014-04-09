@@ -28,197 +28,225 @@ Page {
                 leftPadding: 10.0
                 rightPadding: 10.0
                 Label {
-                    text: "Daily"
-                    verticalAlignment: VerticalAlignment.Center
-                    textStyle.fontSize: FontSize.Medium
-                }
-                CheckBox {
-                    id: daily
-                    verticalAlignment: VerticalAlignment.Center
-                    horizontalAlignment: HorizontalAlignment.Right
-                    checked: _app.getDaily()
-                    onCheckedChanged: {
-                        if(checked)
-                            selectDay.visible = false;
-                        else
-                            selectDay.visible = true;
-                        _app.setDaily(checked)
-                    }
-                }
-            }
-            Container {
-                id: selectDay
-                leftPadding: 10.0
-                rightPadding: 10.0
-                topPadding: 20.0
-                visible: !daily.checked
-                DropDown {
-                    selectedIndex: 0
-                    title: "Select Day:"
-                    Option { text: "Monday" }
-                    Option { text: "Tuesday" }
-                    Option { text: "Wednesday" }
-                    Option { text: "Thursday" }
-                    Option { text: "Friday" }
-                    Option { text: "Saturday" }
-                    Option { text: "Sunday" }
-                }
-            }
-            Divider {
-                preferredWidth: 3000
-            }
-            Container {
-                layout: DockLayout {
-                }
-                preferredWidth: 3000
-                leftPadding: 10.0
-                rightPadding: 10.0
-                Label {
-                    text: "Wireless connections"
+                    text: "Bedside Mode"
                     verticalAlignment: VerticalAlignment.Center
                     textStyle.fontSize: FontSize.Medium
                 }
                 ToggleButton {
-                    id: w_connections
-                    horizontalAlignment: HorizontalAlignment.Right
+                    id: bedsideMode
                     verticalAlignment: VerticalAlignment.Center
-                    checked: _app.getWConnections()
+                    horizontalAlignment: HorizontalAlignment.Right
+                    checked: _app.getServiceStatus()
                     onCheckedChanged: {
-                        _app.setWConnections(checked)
+                        settings.enabled = checked;
+                        _app.setServiceStatus(checked)
                     }
                 }
             }
             Container {
-                leftPadding: 10.0
-                rightPadding: 10.0
-                Label {
-                    text: "Wi-Fi, Bluetooth, NFC"
-                    textStyle.fontStyle: FontStyle.Italic
-                    textStyle.fontSize: FontSize.XSmall
-                    multiline: true
-                }
-            }
-            Divider {
-                preferredWidth: 3000
-            }
-            Container {
-                layout: DockLayout {
-                }
-                preferredWidth: 3000
-                leftPadding: 10.0
-                rightPadding: 10.0
-                Label {
-                    text: "Notifications"
-                    verticalAlignment: VerticalAlignment.Center
-                    textStyle.fontSize: FontSize.Medium
-                }
-                DropDown {
-                    id: mode
-                    preferredWidth: 380
-                    horizontalAlignment: HorizontalAlignment.Right
-                    verticalAlignment: VerticalAlignment.Center
-                    title: "Mode:"
-                    selectedIndex: _app.getNotificationMode()
-                    onSelectedIndexChanged: {
-                        if(selectedIndex == 0)
-                            modeDescription.text = "The normal mode of operations for notifications. Custom settings are saved when switching out of this mode, and are restored when switching into this mode"
-                        if(selectedIndex == 1)
-                            modeDescription.text = "Disable sound and vibrate"
-                        if(selectedIndex == 2)
-                            modeDescription.text = "Play all sound and vibration notifications as vibrations"
-                        if(selectedIndex == 3)
-                            modeDescription.text = "Deliver only phone related notifications" 
-                        if(selectedIndex == 4)
-                            modeDescription.text = "Disable all notifications"
-                        _app.setNotificationMode(selectedValue)
-                    }
-                    Option { text: "Normal"; value: "3"}
-                    Option { text: "Silent"; value: "1"}
-                    Option { text: "Vibrate"; value: "2"}
-                    Option { text: "PhoneOnly"; value: "4"}
-                    Option { text: "AlertsOff"; value: "5"}
-                }
-            }
-            Container {
-                leftPadding: 10.0
-                rightPadding: 10.0
-                topPadding: 10.0
-                Label {
-                    id: modeDescription
-                    text: "Disable sound and vibrate"
-                    textStyle.fontStyle: FontStyle.Italic
-                    textStyle.fontSize: FontSize.XSmall
-                    multiline: true
-                }
-            }
-            Divider {
-                preferredWidth: 3000
-            }
-            Container {
-                preferredWidth: 3000
-                leftPadding: 10.0
-                rightPadding: 10.0
-                layout: StackLayout {
-                    orientation: LayoutOrientation.LeftToRight
-                }
+                id: settings
                 Container {
-                    layoutProperties: StackLayoutProperties {
-                        spaceQuota: 0.5
+                    layout: DockLayout {
                     }
-                    rightMargin: 40.0
-                    DateTimePicker {
-                        id: from
+                    preferredWidth: 3000
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    topPadding: 30.0
+                    Label {
+                        text: "Daily"
                         verticalAlignment: VerticalAlignment.Center
-                        mode: DateTimePickerMode.Time
-                        title: "From"
-                        value: _app.getTimeFrom()
-                        onValueChanged: {
-                            _app.setTimeFrom(value)
+                        textStyle.fontSize: FontSize.Medium
+                    }
+                    CheckBox {
+                        id: daily
+                        verticalAlignment: VerticalAlignment.Center
+                        horizontalAlignment: HorizontalAlignment.Right
+                        checked: _app.getDaily()
+                        onCheckedChanged: {
+                            if(checked)
+                                selectDay.visible = false;
+                            else
+                                selectDay.visible = true;
+                            _app.setDaily(checked)
                         }
                     }
                 }
                 Container {
-                    layoutProperties: StackLayoutProperties {
-                        spaceQuota: 0.5
+                    id: selectDay
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    topPadding: 20.0
+                    visible: !daily.checked
+                    DropDown {
+                        selectedIndex: 0
+                        title: "Select Day:"
+                        Option { text: "Monday" }
+                        Option { text: "Tuesday" }
+                        Option { text: "Wednesday" }
+                        Option { text: "Thursday" }
+                        Option { text: "Friday" }
+                        Option { text: "Saturday" }
+                        Option { text: "Sunday" }
                     }
-                    leftMargin: 40.0
-                    DateTimePicker {
-                        id: to
+                }
+                Divider {
+                    preferredWidth: 3000
+                }
+                Container {
+                    layout: DockLayout {
+                    }
+                    preferredWidth: 3000
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    Label {
+                        text: "Wireless connections"
                         verticalAlignment: VerticalAlignment.Center
-                        mode: DateTimePickerMode.Time
-                        title: "To"
-                        value: _app.getTimeTo()
-                        onValueChanged: {
-                            _app.setTimeTo(value)
+                        textStyle.fontSize: FontSize.Medium
+                    }
+                    ToggleButton {
+                        id: w_connections
+                        horizontalAlignment: HorizontalAlignment.Right
+                        verticalAlignment: VerticalAlignment.Center
+                        checked: _app.getWConnections()
+                        onCheckedChanged: {
+                            _app.setWConnections(checked)
                         }
                     }
                 }
-            }
-            Divider {
-                preferredWidth: 3000
-            }
-            Container {
-                layout: DockLayout {
-                }
-                preferredWidth: 3000
-                leftPadding: 10.0
-                rightPadding: 10.0
-                Button {
-                    id: cancel
-                    text: "Cancel"
-                    horizontalAlignment: HorizontalAlignment.Left
-                    enabled: false
-                    onClicked: {
-                        _app.cancel()  
+                Container {
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    Label {
+                        text: "Wi-Fi, Bluetooth, NFC"
+                        textStyle.fontStyle: FontStyle.Italic
+                        textStyle.fontSize: FontSize.XSmall
+                        multiline: true
                     }
                 }
-                Button {
-                    id: save
-                    text: "Save"
-                    horizontalAlignment: HorizontalAlignment.Right
-                    enabled: false
-                    onClicked: {
-                      _app.save()  
+                Divider {
+                    preferredWidth: 3000
+                }
+                Container {
+                    layout: DockLayout {
+                    }
+                    preferredWidth: 3000
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    Label {
+                        text: "Notifications"
+                        verticalAlignment: VerticalAlignment.Center
+                        textStyle.fontSize: FontSize.Medium
+                    }
+                    DropDown {
+                        id: mode
+                        preferredWidth: 380
+                        horizontalAlignment: HorizontalAlignment.Right
+                        verticalAlignment: VerticalAlignment.Center
+                        title: "Mode:"
+                        selectedIndex: _app.getNotificationMode()
+                        onSelectedIndexChanged: {
+                            if(selectedIndex == 0)
+                                modeDescription.text = "The normal mode of operations for notifications. Custom settings are saved when switching out of this mode, and are restored when switching into this mode"
+                            if(selectedIndex == 1)
+                                modeDescription.text = "Disable sound and vibrate"
+                            if(selectedIndex == 2)
+                                modeDescription.text = "Play all sound and vibration notifications as vibrations"
+                            if(selectedIndex == 3)
+                                modeDescription.text = "Deliver only phone related notifications" 
+                            if(selectedIndex == 4)
+                                modeDescription.text = "Disable all notifications"
+                            _app.setNotificationMode(selectedValue)
+                        }
+                        Option { text: "Normal"; value: "3"}
+                        Option { text: "Silent"; value: "1"}
+                        Option { text: "Vibrate"; value: "2"}
+                        Option { text: "PhoneOnly"; value: "4"}
+                        Option { text: "AlertsOff"; value: "5"}
+                    }
+                }
+                Container {
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    topPadding: 10.0
+                    Label {
+                        id: modeDescription
+                        text: "Disable sound and vibrate"
+                        textStyle.fontStyle: FontStyle.Italic
+                        textStyle.fontSize: FontSize.XSmall
+                        multiline: true
+                    }
+                }
+                Divider {
+                    preferredWidth: 3000
+                }
+                Container {
+                    preferredWidth: 3000
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    layout: StackLayout {
+                        orientation: LayoutOrientation.LeftToRight
+                    }
+                    Container {
+                        layoutProperties: StackLayoutProperties {
+                            spaceQuota: 0.5
+                        }
+                        rightMargin: 40.0
+                        DateTimePicker {
+                            id: from
+                            verticalAlignment: VerticalAlignment.Center
+                            mode: DateTimePickerMode.Time
+                            minuteInterval: 1
+                            title: "From"
+                            value: _app.getTimeFrom()
+                            onValueChanged: {
+                                _app.setTimeFrom(value)
+                            }
+                        }
+                    }
+                    Container {
+                        layoutProperties: StackLayoutProperties {
+                            spaceQuota: 0.5
+                        }
+                        leftMargin: 40.0
+                        DateTimePicker {
+                            id: to
+                            verticalAlignment: VerticalAlignment.Center
+                            mode: DateTimePickerMode.Time
+                            minuteInterval: 1
+                            title: "To"
+                            value: _app.getTimeTo()
+                            onValueChanged: {
+                                _app.setTimeTo(value)
+                            }
+                        }
+                    }
+                }
+                Divider {
+                    preferredWidth: 3000
+                }
+                Container {
+                    layout: DockLayout {
+                    }
+                    preferredWidth: 3000
+                    leftPadding: 10.0
+                    rightPadding: 10.0
+                    Button {
+                        id: cancel
+                        text: "Cancel"
+                        horizontalAlignment: HorizontalAlignment.Left
+                        enabled: false
+                        onClicked: {
+                            _app.cancel()
+                        }
+                    }
+                    Button {
+                        id: save
+                        text: "Save"
+                        horizontalAlignment: HorizontalAlignment.Right
+                        enabled: false
+                        onClicked: {
+                            _app.save()
+                        }
                     }
                 }
             }

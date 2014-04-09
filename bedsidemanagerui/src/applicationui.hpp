@@ -68,6 +68,9 @@ public Q_SLOTS:
     QDateTime getTimeTo();
     void setTimeTo(QDateTime);
 
+    bool getServiceStatus();
+    void setServiceStatus(bool);
+
     void save();
     void cancel();
 
@@ -83,6 +86,7 @@ private:
     static const QString m_daily_settings; // for daily settings
     static const QString m_current_settings; // for storing current settings
     static const QString m_serviceStatus; // for checking service running
+
 
     bb::cascades::AbstractPane *root;
     QTranslator* m_pTranslator;

@@ -20,6 +20,7 @@
 #include <QFileSystemWatcher>
 #include <QMetaType>
 #include <QDateTime>
+#include <QTimer>
 
 struct BedsideSettings{
 	bool w_connections;
@@ -40,13 +41,6 @@ namespace bb
     }
 }
 
-/*!
- * @brief Class which represents the headless service
- * 	      that initializes a Led object and starts it
- * 	      with a Color c and count x.
- *
- */
-//! [0]
 class BedsideManagerService: public QObject
 {
     Q_OBJECT
@@ -88,6 +82,7 @@ public Q_SLOTS:
 private:
     // Invocation Manager instance for receiving system events
     bb::system::InvokeManager *m_invokeManager;
+    QTimer *timer;
 
     static const QString m_author; // for creating settings
     static const QString m_appName; // for creating settings
@@ -97,12 +92,10 @@ private:
     static const QString m_restore_settings; // for storing current/restore settings
     static const QString m_serviceStatus; // for checking service running
 
-    // keys used in setting
-    static const QString m_reset;
     // Watcher for qsettigns file changes
     QFileSystemWatcher* m_settingsWatcher;
 
     bool m_isBedsideModeActive;
 };
-//! [0]
+
 #endif /* ApplicationHeadless_HPP_ */

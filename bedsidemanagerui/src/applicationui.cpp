@@ -111,6 +111,19 @@ bool BedsideManagerUI::isServiceRunning()
     return false;
 }
 
+bool BedsideManagerUI::getServiceStatus()
+{
+    QSettings settings(m_author, m_appName);
+    return settings.value(m_serviceStatus).toBool();
+}
+
+void BedsideManagerUI::setServiceStatus(bool status)
+{
+    qDebug() << "set service status to" << status;
+    QSettings settings(m_author, m_appName);
+    settings.setValue(m_serviceStatus, QVariant::fromValue(status));
+}
+
 bool BedsideManagerUI::getDaily()
 {
     QSettings settings(m_author, m_appName);

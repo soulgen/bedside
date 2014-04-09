@@ -21,9 +21,8 @@
 
 #include <bb/system/InvokeManager>
 #include <bb/system/InvokeRequest>
+#include <bb/system/InvokeTargetReply>
 #include <QDebug>
-#include <QTime>
-#include <QDateTime>
 
 QDataStream& operator<<(QDataStream& out, const BedsideSettings& v) {
 	out << v.w_connections << v.mode << v.from << v.to;
@@ -38,23 +37,19 @@ QDataStream& operator>>(QDataStream& in, BedsideSettings& v) {
 	return in;
 }
 
-//! [0]
 const QString BedsideManagerService::m_author =  "Teleca"; // for creating settings
 const QString BedsideManagerService::m_appName = "BedsideManagerApp"; // for creating settings
 
 // keys for setting file
 const QString BedsideManagerService::m_serviceStatus = "ServiceStatus";
-const QString BedsideManagerService::m_reset = "Reset";
 
 const QString BedsideManagerService::m_daily = "Daily";
 const QString BedsideManagerService::m_daily_settings = "DailySettings";
 const QString BedsideManagerService::m_restore_settings = "RestoreSettings";
 
-//! [0]
 using namespace bb::system;
 using namespace bb::platform;
 
-//! [1]
 BedsideManagerService::BedsideManagerService(bb::Application *app) :
 		QObject(app), m_invokeManager(new InvokeManager(this)), m_settingsWatcher(new QFileSystemWatcher(this)), m_isBedsideModeActive(
 				false) {
@@ -66,8 +61,7 @@ BedsideManagerService::BedsideManagerService(bb::Application *app) :
 	qDebug() << "PID------------"
 			<< QString::number(QCoreApplication::applicationPid());
 }
-//! [1]
-//! [3]
+
 void BedsideManagerService::onInvoked(
 		const bb::system::InvokeRequest& request) {
 	qDebug() << "##service got invoked: " << request.action();
@@ -83,15 +77,22 @@ void BedsideManagerService::onInvoked(
 }
 
 void BedsideManagerService::settingsChanged(const QString & path) {
+	Q_UNUSED(path);
 	QSettings settings(m_author, m_appName);
-	if (settings.value(m_reset).toBool()) {
+	if (!settings.value(m_serviceStatus).toBool()) {
+		qDebug() << "Stopping Service";
+		timer->stop();
+	}
+	else {
+		qDebug() << "Running Service";
+		timer->start(3000);
 	}
 }
 
 void BedsideManagerService::init() {
 	// set the initial qsettings keys/values upon startup
 	QSettings settings(m_author, m_appName);
-	QTimer *timer = new QTimer(this);
+	timer = new QTimer(this);
 
 	settings.setValue(m_serviceStatus, "running");
 	// Force the creation of the settings file so that we can watch it for changes.
@@ -108,14 +109,12 @@ void BedsideManagerService::init() {
 
 	ok = connect(timer, SIGNAL(timeout()), this, SLOT(checkcurtime()));
 	Q_ASSERT(ok);
-	timer->start(3000);
 
 	ok = connect(m_settingsWatcher, SIGNAL(fileChanged(const QString&)), this,
 			SLOT(settingsChanged(const QString&)));
 	Q_ASSERT(ok);
 	Q_UNUSED(ok);
 }
-//! [2]
 
 void BedsideManagerService::checkcurtime() {
 	qDebug() << "BedsideManagerService::checkcurtime()";
