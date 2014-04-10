@@ -89,11 +89,11 @@ private:
 
     static const QString m_daily; // for daily check box
     static const QString m_daily_settings; // for daily settings
-    static const QString m_restore_settings; // for storing current/restore settings
     static const QString m_serviceStatus; // for checking service running
 
     // Watcher for qsettigns file changes
     QFileSystemWatcher* m_settingsWatcher;
+    BedsideSettings restore_settings;
 
     bool m_isBedsideModeActive;
 };

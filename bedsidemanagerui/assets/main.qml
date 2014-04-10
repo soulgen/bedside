@@ -7,8 +7,8 @@ Page {
     property alias mode_index: mode.selectedIndex
     property alias from_value: from.value
     property alias to_value: to.value
+    property alias bedside_mode: bedsideMode.checked
     
-    ScrollView {
         Container {
             topPadding: 30.0
             background: back.imagePaint
@@ -43,7 +43,8 @@ Page {
                     }
                 }
             }
-            Container {
+            ScrollView {
+                Container {
                 id: settings
                 Container {
                     layout: DockLayout {
@@ -93,6 +94,7 @@ Page {
                     preferredWidth: 3000
                 }
                 Container {
+                    visible: false
                     layout: DockLayout {
                     }
                     preferredWidth: 3000
@@ -114,6 +116,7 @@ Page {
                     }
                 }
                 Container {
+                    visible: false
                     leftPadding: 10.0
                     rightPadding: 10.0
                     Label {

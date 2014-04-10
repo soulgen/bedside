@@ -42,10 +42,8 @@ const QString BedsideManagerService::m_appName = "BedsideManagerApp"; // for cre
 
 // keys for setting file
 const QString BedsideManagerService::m_serviceStatus = "ServiceStatus";
-
 const QString BedsideManagerService::m_daily = "Daily";
 const QString BedsideManagerService::m_daily_settings = "DailySettings";
-const QString BedsideManagerService::m_restore_settings = "RestoreSettings";
 
 using namespace bb::system;
 using namespace bb::platform;
@@ -58,34 +56,44 @@ BedsideManagerService::BedsideManagerService(bb::Application *app) :
 	qRegisterMetaTypeStreamOperators<BedsideSettings>("BedsideSettings");
 
 	// log the service PID
-	qDebug() << "PID------------"
-			<< QString::number(QCoreApplication::applicationPid());
+	qDebug() << "PID = " << QString::number(QCoreApplication::applicationPid());
 }
 
-void BedsideManagerService::onInvoked(
-		const bb::system::InvokeRequest& request) {
-	qDebug() << "##service got invoked: " << request.action();
+void BedsideManagerService::onInvoked(const bb::system::InvokeRequest& request) {
+	qDebug() << "#service got invoked: " << request.action();
 
-	// start led flashing once the start request is received
-	if (request.action().compare("bb.action.system.STARTED") == 0) {
-		//m_led->flash(m_flashCount);
-	} else {
-		// write service running status to qsettings
-		QSettings settings(m_author, m_appName);
-		settings.setValue(m_serviceStatus, request.action());
-	}
+//	if (request.action().compare("bb.action.system.STARTED") == 0) {
+//		//m_led->flash(m_flashCount);
+//	} else {
+//		// write service running status to qsettings
+//		QSettings settings(m_author, m_appName);
+//		settings.setValue(m_serviceStatus, request.action());
+//	}
 }
 
 void BedsideManagerService::settingsChanged(const QString & path) {
 	Q_UNUSED(path);
 	QSettings settings(m_author, m_appName);
+	BedsideSettings set = LoadFromQSettings(true);
+	NotificationGlobalSettings globalsettings;
+
 	if (!settings.value(m_serviceStatus).toBool()) {
 		qDebug() << "Stopping Service";
 		timer->stop();
+		m_isBedsideModeActive = false;
 	}
 	else {
 		qDebug() << "Running Service";
-		timer->start(3000);
+		if(!timer->isActive())
+			timer->start(500000);
+	}
+
+	if(m_isBedsideModeActive &&
+	   (set.to != restore_settings.to || set.from != restore_settings.from
+		|| set.mode != globalsettings.mode() ))
+	{
+		m_isBedsideModeActive = false;
+		checkcurtime();
 	}
 }
 
@@ -94,7 +102,7 @@ void BedsideManagerService::init() {
 	QSettings settings(m_author, m_appName);
 	timer = new QTimer(this);
 
-	settings.setValue(m_serviceStatus, "running");
+	settings.setValue(m_serviceStatus, QVariant::fromValue(true));
 	// Force the creation of the settings file so that we can watch it for changes.
 	settings.sync();
 
@@ -109,6 +117,10 @@ void BedsideManagerService::init() {
 
 	ok = connect(timer, SIGNAL(timeout()), this, SLOT(checkcurtime()));
 	Q_ASSERT(ok);
+	if(!timer->isActive()){
+		settings.setValue(m_serviceStatus, QVariant::fromValue(true));
+		timer->start(500000);
+	}
 
 	ok = connect(m_settingsWatcher, SIGNAL(fileChanged(const QString&)), this,
 			SLOT(settingsChanged(const QString&)));
@@ -126,27 +138,29 @@ void BedsideManagerService::checkcurtime() {
 	qDebug() << "BedsideManagerService::checkcurtime() m_isBedsideModeActive ="
 			<< m_isBedsideModeActive;
 
-	qDebug() << "BedsideManagerService::checkcurtime() curTime ="
-			<< curDateTime.currentDateTime();
-
-	qDebug() << "BedsideManagerService::checkcurtime() BedsideTime From ="
-			<< set.from;
-
-	qDebug() << "BedsideManagerService::checkcurtime() BedsideTime To ="
-			<< set.to;
+//	qDebug() << "BedsideManagerService::checkcurtime() curTime ="
+//			<< curDateTime.currentDateTime();
+//
+//	qDebug() << "BedsideManagerService::checkcurtime() BedsideTime From ="
+//			<< set.from;
+//
+//	qDebug() << "BedsideManagerService::checkcurtime() BedsideTime To ="
+//			<< set.to;
 
 	if (!m_isBedsideModeActive) {
-
 		if (((set.from.toMSecsSinceEpoch()) >= 0)
-				&& (curDateTime.currentDateTime() >= set.from)
-				&& (curDateTime.currentDateTime() < set.to)) {
+			&& (curDateTime.currentDateTime() >= set.from)
+			&& (curDateTime.currentDateTime() < set.to)) {
 			saveCurrentPhoneSettings();
 			m_isBedsideModeActive = true;
 			setPhoneSettings();
 		}
+		else
+			setPhoneSettings();
 	} else {
 		if (((set.to.toMSecsSinceEpoch()) >= 0)
-				&& (curDateTime.currentDateTime() >= set.to)) {
+			&& ((curDateTime.currentDateTime() >= set.to) ||
+				(curDateTime.currentDateTime() < set.from))) {
 			m_isBedsideModeActive = false;
 			setPhoneSettings();
 		}
@@ -180,51 +194,40 @@ void BedsideManagerService::setPhoneSettings() {
 		globalsettings.setMode(NotificationMode::Normal);
 		break;
 	}
-
 }
 
 BedsideSettings BedsideManagerService::LoadFromQSettings(bool isBedsideMode) {
-	BedsideSettings set = { 0, 0, QDateTime(), QDateTime() };
-	QSettings settings(m_author, m_appName);
 	if (isBedsideMode) {
+		BedsideSettings set = { 0, 0, QDateTime(), QDateTime() };
+		QSettings settings(m_author, m_appName);
 		if (settings.contains(m_daily_settings)) {
 			QVariant var = settings.value(m_daily_settings);
 			if (var.canConvert<BedsideSettings>()) {
 				set = var.value<BedsideSettings>();
-				qDebug() << "Service: LoadFromQSettings(" << set.mode << ")";
+				qDebug() <<"Service: LoadFromQSettings(" << set.mode << ")";
 			} else {
 				qDebug()<<"Service: LoadFromQSettings: ERROR: can't load bedside qsettings";
 			}
 		}
-	} else {
-		if (settings.contains(m_restore_settings)) {
-			QVariant var = settings.value(m_restore_settings);
-			if (var.canConvert<BedsideSettings>()) {
-				set = var.value<BedsideSettings>();
-				qDebug()<< "Service: LoadFromQSettings(" << set.mode << ")";
-			} else {
-				qDebug()<< "Service: LoadFromQSettings: ERROR: can't load restore qsettings";
-			}
-		}
-	}
-
-	return set;
+		return set;
+	} else
+        return restore_settings;
 }
 
 void BedsideManagerService::saveCurrentPhoneSettings() {
 	qDebug() << "BedsideManagerService::saveCurrentPhoneSettings()";
-	QSettings settings(m_author, m_appName);
 	NotificationGlobalSettings globalsettings;
-	BedsideSettings current_settings = { 0, globalsettings.mode(), QDateTime(),
-			QDateTime() };
-	settings.setValue(m_restore_settings,
-			QVariant::fromValue(current_settings));
+	QSettings settings(m_author, m_appName);
+	QVariant var = settings.value(m_daily_settings);
+	BedsideSettings current_settings = var.value<BedsideSettings>();
 
-	qDebug() << "saveCurrentPhoneSettings: w_connections = "
-			<< current_settings.w_connections;
-	qDebug() << "saveCurrentPhoneSettings: mode = " << current_settings.mode;
-	qDebug() << "saveCurrentPhoneSettings: From = "
-			<< current_settings.from.toString();
-	qDebug() << "saveCurrentPhoneSettings: To = "
-			<< current_settings.to.toString();
+	restore_settings = {0, globalsettings.mode(), current_settings.from, current_settings.to };
+
+//	qDebug() << "saveCurrentPhoneSettings: w_connections = "
+//			<< current_settings.w_connections;
+	qDebug() << "saveCurrentPhoneSettings: mode = " << restore_settings.mode;
+//	qDebug() << "saveCurrentPhoneSettings: From = "
+//			<< current_settings.from.toString();
+//	qDebug() << "saveCurrentPhoneSettings: To = "
+//			<< current_settings.to.toString();
 }

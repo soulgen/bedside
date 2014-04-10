@@ -102,8 +102,7 @@ bool BedsideManagerUI::isServiceRunning()
     if (settings.value("ServiceStatus").isNull()) {
         qDebug() << "found null value for ServiceStatus key...";
     } else {
-        QString status = settings.value("ServiceStatus").toString();
-        if (status == "running") {
+        if (true == settings.value("ServiceStatus").toBool()) {
             settingsChanged("");
             return true;
         }
@@ -269,6 +268,8 @@ void BedsideManagerUI::settingsChanged(const QString & path)
 	Q_UNUSED(path);
     qDebug() << "UI: Settings has been changed";
     QSettings settings(m_author, m_appName);
+
+    root->setProperty("bedside_mode", settings.value(m_serviceStatus).toBool());
 
     if (settings.contains(m_daily)) {
     	qDebug() << "UI: m_daily = " << settings.value(m_daily).toBool();
