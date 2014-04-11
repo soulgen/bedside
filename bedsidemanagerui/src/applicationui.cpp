@@ -11,7 +11,15 @@ const QString BedsideManagerUI::m_appName = "BedsideManagerApp"; // for creating
 // keys for setting file
 const QString BedsideManagerUI::m_daily = "Daily";
 const QString BedsideManagerUI::m_daily_settings = "DailySettings";
-const QString BedsideManagerUI::m_current_settings = "CurrentSettings";
+const QString BedsideManagerUI::m_monday_settings = "MondaySettings";
+const QString BedsideManagerUI::m_tuesday_settings = "TuesdaySettings";
+const QString BedsideManagerUI::m_wednesday_settings = "WednesdaySettings";
+const QString BedsideManagerUI::m_thursday_settings = "ThursdaySettings";
+const QString BedsideManagerUI::m_friday_settings = "FridaySettings";
+const QString BedsideManagerUI::m_saturday_settings = "SaturdaySettings";
+const QString BedsideManagerUI::m_sunday_settings = "SundaySettings";
+const QString BedsideManagerUI::m_monitoring_status = "MonitoringStatus";
+const QString BedsideManagerUI::m_selected_day = "SelectedDay";
 const QString BedsideManagerUI::m_serviceStatus = "ServiceStatus";
 
 using namespace bb::cascades;
@@ -19,18 +27,17 @@ using namespace bb::cascades;
 static bool sceneReady = false;
 
 QDataStream& operator<<(QDataStream& out, const BedsideSettings& v) {
-    out << v.w_connections << v.mode << v.from << v.to;
+    out << v.isActive << v.mode << v.from << v.to;
     return out;
 }
 
 QDataStream& operator>>(QDataStream& in, BedsideSettings& v) {
-    in >> v.w_connections;
+    in >> v.isActive;
     in >> v.mode;
     in >> v.from;
     in >> v.to;
     return in;
 }
-
 
 BedsideManagerUI::BedsideManagerUI(bb::cascades::Application *app)
     : QObject(app)
@@ -45,6 +52,7 @@ BedsideManagerUI::BedsideManagerUI(bb::cascades::Application *app)
     // Force the creation of the settings file so that we can watch it for changes.
     settings.sync();
 
+    init();
     // Watcher for changes in the settings file.
     settingsWatcher = new QFileSystemWatcher(this);
     settingsWatcher->addPath(settings.fileName());
@@ -64,19 +72,7 @@ BedsideManagerUI::BedsideManagerUI(bb::cascades::Application *app)
     app->setScene(root);
     sceneReady = true;
 
-    readSettings();
     isServiceRunning();
-}
-
-void BedsideManagerUI::readSettings()
-{
-    QVariant var;
-    saved_settings.w_connections = root->property("w_connections_checked").toBool();
-    saved_settings.mode = root->property("mode_index").toInt();
-    var = root->property("from_value");
-    saved_settings.from = var.value<QDateTime>();
-    var = root->property("to_value");
-    saved_settings.to = var.value<QDateTime>();
 }
 
 void BedsideManagerUI::enableButtons()
@@ -110,17 +106,22 @@ bool BedsideManagerUI::isServiceRunning()
     return false;
 }
 
-bool BedsideManagerUI::getServiceStatus()
+bool BedsideManagerUI::getMonitoringStatus()
 {
     QSettings settings(m_author, m_appName);
-    return settings.value(m_serviceStatus).toBool();
+
+    if (settings.contains(m_monitoring_status)) {
+        return settings.value(m_monitoring_status).toBool();
+    }
+    else
+    	return true;
 }
 
-void BedsideManagerUI::setServiceStatus(bool status)
+void BedsideManagerUI::setMonitoringStatus(bool status)
 {
-    qDebug() << "set service status to" << status;
+    qDebug() << "set monitoring status to" << status;
     QSettings settings(m_author, m_appName);
-    settings.setValue(m_serviceStatus, QVariant::fromValue(status));
+    settings.setValue(m_monitoring_status, QVariant::fromValue(status));
 }
 
 bool BedsideManagerUI::getDaily()
@@ -140,44 +141,40 @@ void BedsideManagerUI::setDaily(bool checked)
     qDebug() << "UI: setDaily(" << checked << ")";
 }
 
-bool BedsideManagerUI::getWConnections()
+int BedsideManagerUI::getSelectedDay()
 {
     QSettings settings(m_author, m_appName);
-    if (settings.contains(m_daily_settings)) {
-    	QVariant var = settings.value(m_daily_settings);
-    	if(var.canConvert<BedsideSettings>()){
-    		BedsideSettings set = var.value<BedsideSettings>();
-    		qDebug() << "UI: getWConnections(" << set.w_connections << ")";
-    	    return set.w_connections;
-    	}
+    if (settings.contains(m_selected_day)) {
+    	return settings.value(m_selected_day).toInt();
     }
-    return false;
+    return 0;
 }
 
-void BedsideManagerUI::setWConnections(bool checked)
+void BedsideManagerUI::setSelectedDay(int day)
 {
-	if(saved_settings.w_connections != checked)	{
-	    unsaved_settings.w_connections = checked;
-	    enableButtons();
-	}
-	else
-		disableButtons();
+    QSettings settings(m_author, m_appName);
+    settings.setValue(m_selected_day, QVariant::fromValue(day));
+}
 
-    qDebug() << "UI: setWConnections(" << checked << ")";
+bool BedsideManagerUI::getServiceStatus()
+{
+    return getVisibleSettings().isActive;
+}
+
+void BedsideManagerUI::setServiceStatus(bool status)
+{
+    QSettings settings(m_author, m_appName);
+    if(saved_settings.isActive != status) {
+    	unsaved_settings.isActive = status;
+    	enableButtons();
+    }
+    else
+    	disableButtons();
 }
 
 int BedsideManagerUI::getNotificationMode()
 {
-    QSettings settings(m_author, m_appName);
-    if (settings.contains(m_daily_settings)) {
-    	QVariant var = settings.value(m_daily_settings);
-    	if(var.canConvert<BedsideSettings>()){
-    		BedsideSettings set = var.value<BedsideSettings>();
-    		qDebug() << "UI: getNotificationMode(" << set.mode << ")";
-    	    return set.mode;
-    	}
-    }
-    return 0;
+	return getVisibleSettings().mode;
 }
 
 void BedsideManagerUI::setNotificationMode(int mode)
@@ -194,16 +191,7 @@ void BedsideManagerUI::setNotificationMode(int mode)
 
 QDateTime BedsideManagerUI::getTimeFrom()
 {
-    QSettings settings(m_author, m_appName);
-    if (settings.contains(m_daily_settings)) {
-    	QVariant var = settings.value(m_daily_settings);
-    	if(var.canConvert<BedsideSettings>()){
-    		BedsideSettings set = var.value<BedsideSettings>();
-    		qDebug() << "UI: getTimeFrom(" << set.from.toString() << ")";
-    	    return set.from;
-    	}
-    }
-    return QDateTime(QDate::currentDate(), QTime(22, 0, 0));
+    return getVisibleSettings().from;
 }
 
 void BedsideManagerUI::setTimeFrom(QDateTime from)
@@ -220,16 +208,7 @@ void BedsideManagerUI::setTimeFrom(QDateTime from)
 
 QDateTime BedsideManagerUI::getTimeTo()
 {
-    QSettings settings(m_author, m_appName);
-    if (settings.contains(m_daily_settings)) {
-    	QVariant var = settings.value(m_daily_settings);
-    	if(var.canConvert<BedsideSettings>()){
-    		BedsideSettings set = var.value<BedsideSettings>();
-    		qDebug() << "UI: getTimeTo(" << set.to.toString() << ")";
-    	    return set.to;
-    	}
-    }
-    return QDateTime(QDate::currentDate(), QTime(6, 0, 0));
+    return getVisibleSettings().to;
 }
 
 void BedsideManagerUI::setTimeTo(QDateTime to)
@@ -246,20 +225,30 @@ void BedsideManagerUI::setTimeTo(QDateTime to)
 
 void BedsideManagerUI::save()
 {
-    qDebug() << "save()";
     QSettings settings(m_author, m_appName);
-    settings.setValue(m_daily_settings, QVariant::fromValue(unsaved_settings));
-    readSettings();
+
+    if(settings.value(m_daily).toBool())
+    	settings.setValue(m_daily_settings, QVariant::fromValue(unsaved_settings));
+    else {
+    	int index = settings.value(m_selected_day).toInt();
+    	switch(index) {
+    	   case 0: settings.setValue(m_monday_settings, QVariant::fromValue(unsaved_settings)); break;
+    	   case 1: settings.setValue(m_tuesday_settings, QVariant::fromValue(unsaved_settings)); break;
+    	   case 2: settings.setValue(m_wednesday_settings, QVariant::fromValue(unsaved_settings)); break;
+    	   case 3: settings.setValue(m_thursday_settings, QVariant::fromValue(unsaved_settings)); break;
+    	   case 4: settings.setValue(m_friday_settings, QVariant::fromValue(unsaved_settings)); break;
+    	   case 5: settings.setValue(m_saturday_settings, QVariant::fromValue(unsaved_settings)); break;
+    	   case 6: settings.setValue(m_sunday_settings, QVariant::fromValue(unsaved_settings)); break;
+    	}
+    }
+
+    saved_settings = unsaved_settings;
     disableButtons();
 }
 
 void BedsideManagerUI::cancel()
 {
-	qDebug() << "cancel()";
-    root->setProperty("w_connections_checked", saved_settings.w_connections);
-    root->setProperty("mode_index", saved_settings.mode);
-    root->setProperty("from_value", saved_settings.from);
-    root->setProperty("to_value", saved_settings.to);
+	updateLayoutFromSettings();
 	disableButtons();
 }
 
@@ -267,20 +256,74 @@ void BedsideManagerUI::settingsChanged(const QString & path)
 {
 	Q_UNUSED(path);
     qDebug() << "UI: Settings has been changed";
-    QSettings settings(m_author, m_appName);
 
-    root->setProperty("bedside_mode", settings.value(m_serviceStatus).toBool());
+    updateLayoutFromSettings();
 
-    if (settings.contains(m_daily)) {
-    	qDebug() << "UI: m_daily = " << settings.value(m_daily).toBool();
-    }
-    if (settings.contains(m_daily_settings)) {
-     	QVariant var = settings.value(m_daily_settings);
-   		BedsideSettings set = var.value<BedsideSettings>();
-   		qDebug() << "UI: w_connections = " << set.w_connections;
-   		qDebug() << "UI: mode = " << set.mode;
-   		qDebug() << "UI: From = " << set.from.toString();
-   		qDebug() << "UI: To = " << set.to.toString();
-    }
+    saved_settings = unsaved_settings = getVisibleSettings();
+
+    disableButtons();
 }
 
+void BedsideManagerUI::updateLayoutFromSettings()
+{
+	BedsideSettings set = getVisibleSettings();
+
+    root->setProperty("isActive_checked", set.isActive);
+    root->setProperty("mode_index", set.mode);
+    root->setProperty("from_value", set.from);
+    root->setProperty("to_value", set.to);
+}
+
+BedsideSettings BedsideManagerUI::getVisibleSettings()
+{
+	QVariant var;
+	QSettings settings(m_author, m_appName);
+
+    if(settings.value(m_daily).toBool())
+    	var = settings.value(m_daily_settings);
+    else {
+    	int index = settings.value(m_selected_day).toInt();
+    	switch(index) {
+    	   case 0: var = settings.value(m_monday_settings); break;
+    	   case 1: var = settings.value(m_tuesday_settings); break;
+    	   case 2: var = settings.value(m_wednesday_settings); break;
+    	   case 3: var = settings.value(m_thursday_settings); break;
+    	   case 4: var = settings.value(m_friday_settings); break;
+    	   case 5: var = settings.value(m_saturday_settings); break;
+    	   case 6: var = settings.value(m_sunday_settings); break;
+    	}
+    }
+    return var.value<BedsideSettings>();
+}
+
+void BedsideManagerUI::init()
+{
+	QSettings settings(m_author, m_appName);
+
+	if (!settings.contains(m_daily_settings))
+		settings.setValue(m_daily_settings, QVariant::fromValue(getDefaultValues()));
+	if (!settings.contains(m_monday_settings))
+		settings.setValue(m_monday_settings, QVariant::fromValue(getDefaultValues()));
+	if (!settings.contains(m_tuesday_settings))
+		settings.setValue(m_tuesday_settings, QVariant::fromValue(getDefaultValues()));
+	if (!settings.contains(m_wednesday_settings))
+		settings.setValue(m_wednesday_settings, QVariant::fromValue(getDefaultValues()));
+	if (!settings.contains(m_thursday_settings))
+		settings.setValue(m_thursday_settings, QVariant::fromValue(getDefaultValues()));
+	if (!settings.contains(m_friday_settings))
+		settings.setValue(m_friday_settings, QVariant::fromValue(getDefaultValues()));
+	if (!settings.contains(m_saturday_settings))
+		settings.setValue(m_saturday_settings, QVariant::fromValue(getDefaultValues()));
+	if (!settings.contains(m_sunday_settings))
+		settings.setValue(m_sunday_settings, QVariant::fromValue(getDefaultValues()));
+}
+
+BedsideSettings BedsideManagerUI::getDefaultValues()
+{
+	BedsideSettings set;
+    set.isActive = false;
+	set.mode = 0;
+	set.from = QDateTime(QDate::currentDate(), QTime(23, 0, 0));
+	set.to = QDateTime(QDate::currentDate(), QTime(06, 0, 0));
+	return set;
+}

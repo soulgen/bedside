@@ -10,7 +10,7 @@
 #include <QtCore/QSettings>
 
 struct BedsideSettings{
-	bool w_connections;
+	bool isActive;
 	int mode;
 	QDateTime from;
 	QDateTime to;
@@ -56,17 +56,20 @@ public Q_SLOTS:
     bool getDaily();
     void setDaily(bool);
 
-    bool getWConnections();
-    void setWConnections(bool);
-
     int getNotificationMode();
     void setNotificationMode(int);
+
+    int getSelectedDay();
+    void setSelectedDay(int);
 
     QDateTime getTimeFrom();
     void setTimeFrom(QDateTime);
 
     QDateTime getTimeTo();
     void setTimeTo(QDateTime);
+
+    bool getMonitoringStatus();
+    void setMonitoringStatus(bool);
 
     bool getServiceStatus();
     void setServiceStatus(bool);
@@ -76,7 +79,10 @@ public Q_SLOTS:
 
 private:
 
-    void readSettings();
+    void init();
+    BedsideSettings getDefaultValues();
+    BedsideSettings getVisibleSettings();
+    void updateLayoutFromSettings();
     void enableButtons();
     void disableButtons();
 
@@ -84,9 +90,16 @@ private:
     static const QString m_appName; // for creating settings
     static const QString m_daily; // for daily check box
     static const QString m_daily_settings; // for daily settings
-    static const QString m_current_settings; // for storing current settings
+    static const QString m_monday_settings; // for Monday settings
+    static const QString m_tuesday_settings; // for Tuesday settings
+    static const QString m_wednesday_settings; // for Wednesday settings
+    static const QString m_thursday_settings; // for Thursday settings
+    static const QString m_friday_settings; // for Friday settings
+    static const QString m_saturday_settings; // for Saturday settings
+    static const QString m_sunday_settings; // for Sunday settings
+    static const QString m_monitoring_status; // for checking monitoring status
+    static const QString m_selected_day; // for daily settings
     static const QString m_serviceStatus; // for checking service running
-
 
     bb::cascades::AbstractPane *root;
     QTranslator* m_pTranslator;

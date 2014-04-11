@@ -25,12 +25,12 @@
 #include <QDebug>
 
 QDataStream& operator<<(QDataStream& out, const BedsideSettings& v) {
-	out << v.w_connections << v.mode << v.from << v.to;
+	out << v.isActive << v.mode << v.from << v.to;
 	return out;
 }
 
 QDataStream& operator>>(QDataStream& in, BedsideSettings& v) {
-	in >> v.w_connections;
+	in >> v.isActive;
 	in >> v.mode;
 	in >> v.from;
 	in >> v.to;
@@ -85,7 +85,7 @@ void BedsideManagerService::settingsChanged(const QString & path) {
 	else {
 		qDebug() << "Running Service";
 		if(!timer->isActive())
-			timer->start(500000);
+			timer->start(5000);
 	}
 
 	if(m_isBedsideModeActive &&
@@ -102,7 +102,6 @@ void BedsideManagerService::init() {
 	QSettings settings(m_author, m_appName);
 	timer = new QTimer(this);
 
-	settings.setValue(m_serviceStatus, QVariant::fromValue(true));
 	// Force the creation of the settings file so that we can watch it for changes.
 	settings.sync();
 
@@ -117,10 +116,9 @@ void BedsideManagerService::init() {
 
 	ok = connect(timer, SIGNAL(timeout()), this, SLOT(checkcurtime()));
 	Q_ASSERT(ok);
-	if(!timer->isActive()){
-		settings.setValue(m_serviceStatus, QVariant::fromValue(true));
-		timer->start(500000);
-	}
+	settings.setValue(m_serviceStatus, QVariant::fromValue(true));
+	if(!timer->isActive())
+		timer->start(5000);
 
 	ok = connect(m_settingsWatcher, SIGNAL(fileChanged(const QString&)), this,
 			SLOT(settingsChanged(const QString&)));
@@ -223,8 +221,8 @@ void BedsideManagerService::saveCurrentPhoneSettings() {
 
 	restore_settings = {0, globalsettings.mode(), current_settings.from, current_settings.to };
 
-//	qDebug() << "saveCurrentPhoneSettings: w_connections = "
-//			<< current_settings.w_connections;
+//	qDebug() << "saveCurrentPhoneSettings: isActive = "
+//			<< current_settings.isActive;
 	qDebug() << "saveCurrentPhoneSettings: mode = " << restore_settings.mode;
 //	qDebug() << "saveCurrentPhoneSettings: From = "
 //			<< current_settings.from.toString();

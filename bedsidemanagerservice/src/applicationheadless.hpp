@@ -23,7 +23,7 @@
 #include <QTimer>
 
 struct BedsideSettings{
-	bool w_connections;
+	bool isActive;
 	int mode;
 	QDateTime from;
 	QDateTime to;
