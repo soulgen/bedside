@@ -321,7 +321,7 @@ void BedsideManagerUI::init()
 BedsideSettings BedsideManagerUI::getDefaultValues()
 {
 	BedsideSettings set;
-    set.isActive = false;
+    set.isActive = true;
 	set.mode = 0;
 	set.from = QDateTime(QDate::currentDate(), QTime(23, 0, 0));
 	set.to = QDateTime(QDate::currentDate(), QTime(06, 0, 0));

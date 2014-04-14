@@ -14,13 +14,13 @@ Page {
     Container {
         topPadding: 20.0
         background: back.imagePaint
-//        attachedObjects: [
-//            ImagePaintDefinition {
-//                id: back
-//                repeatPattern: RepeatPattern.XY
-//                imageSource: "asset:///images/bg.jpg"
-//            }
-//        ]
+        attachedObjects: [
+            ImagePaintDefinition {
+                id: back
+                repeatPattern: RepeatPattern.XY
+                imageSource: "asset:///images/bg.jpg"
+            }
+        ]
         verticalAlignment: VerticalAlignment.Fill
         horizontalAlignment: HorizontalAlignment.Fill
         Container {
@@ -74,7 +74,6 @@ Page {
                             bedsideMode.visible = !checked
                             bedsideDivider.visible = checked
                             _app.setDaily(checked)
-    
                         }
                     }
                 }

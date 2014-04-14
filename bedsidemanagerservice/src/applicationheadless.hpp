@@ -73,22 +73,34 @@ public Q_SLOTS:
      */
     void init();
 
-    void checkcurtime();
+    void updateMonitoring();
+    int getMsec(QDateTime);
     void saveCurrentPhoneSettings();
     void setPhoneSettings();
+    void setBedsideMode();
 
-    BedsideSettings LoadFromQSettings(bool isBedsideModeActive);
+    BedsideSettings getActualSettings();
 
 private:
     // Invocation Manager instance for receiving system events
     bb::system::InvokeManager *m_invokeManager;
     QTimer *timer;
+    QTimer *hourly_timer;
 
     static const QString m_author; // for creating settings
     static const QString m_appName; // for creating settings
 
     static const QString m_daily; // for daily check box
     static const QString m_daily_settings; // for daily settings
+    static const QString m_monday_settings; // for Monday settings
+    static const QString m_tuesday_settings; // for Tuesday settings
+    static const QString m_wednesday_settings; // for Wednesday settings
+    static const QString m_thursday_settings; // for Thursday settings
+    static const QString m_friday_settings; // for Friday settings
+    static const QString m_saturday_settings; // for Saturday settings
+    static const QString m_sunday_settings; // for Sunday settings
+    static const QString m_monitoring_status; // for checking monitoring status
+    static const QString m_selected_day; // for daily settings
     static const QString m_serviceStatus; // for checking service running
 
     // Watcher for qsettigns file changes
