@@ -174,6 +174,7 @@ void BedsideManagerUI::setServiceStatus(bool status)
 
 int BedsideManagerUI::getNotificationMode()
 {
+	qDebug() << "UI: getNotificationMode(" << getVisibleSettings().mode << ")";
 	return getVisibleSettings().mode;
 }
 

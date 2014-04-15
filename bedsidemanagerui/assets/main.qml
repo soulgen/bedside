@@ -165,13 +165,13 @@ Page {
                                     modeDescription.text = "Deliver only phone related notifications" 
                                 if(selectedIndex == 4)
                                     modeDescription.text = "Disable all notifications"
-                                _app.setNotificationMode(selectedValue)
+                                _app.setNotificationMode(selectedIndex)
                             }
-                            Option { text: "Normal"; value: "3"}
-                            Option { text: "Silent"; value: "1"}
-                            Option { text: "Vibrate"; value: "2"}
-                            Option { text: "PhoneOnly"; value: "4"}
-                            Option { text: "AlertsOff"; value: "5"}
+                            Option { text: "Normal"; }
+                            Option { text: "Silent"; }
+                            Option { text: "Vibrate"; }
+                            Option { text: "PhoneOnly"; }
+                            Option { text: "AlertsOff"; }
                         }
                     }
                     Container {
