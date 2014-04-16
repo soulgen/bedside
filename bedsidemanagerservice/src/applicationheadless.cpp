@@ -24,7 +24,7 @@
 #include <bb/system/InvokeTargetReply>
 #include <QDebug>
 
-#define HOUR 10000
+#define HOUR 3600000
 #define H24_MSEC 86400000
 
 static int day_index = 0; // 0-Daily, 1-Monday, 2-Tuesday, etc.
@@ -94,13 +94,13 @@ void BedsideManagerService::settingsChanged(const QString & path) {
 	BedsideSettings set = getActualSettings();
     NotificationGlobalSettings globalsettings;
 
-    qDebug() << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     qDebug() << "SERVICE: settingsChanged";
 	if (!settings.value(m_monitoring_status).toBool()) {
 		qDebug() << "SERVICE: Stopping Service";
+		m_isBedsideModeActive = false;
+		setPhoneSettings();
 		timer->stop();
 		hourly_timer->stop();
-		m_isBedsideModeActive = false;
 	}
 	else {
 		if(m_isBedsideModeActive && hourly_timer->isActive())
@@ -136,23 +136,30 @@ void BedsideManagerService::updateMonitoring()
 		int num_of_days = day_index - QDate::currentDate().dayOfWeek();
 		if(num_of_days < 0 && day_index == 0)
 			num_of_days = 0;
+		else if(num_of_days == -1 && getMsec(QDateTime::currentDateTime()) < H24_MSEC/2) {
+			num_of_days = 0;
+		}
 		else if(num_of_days < 0)
 			num_of_days = 7 - QDate::currentDate().dayOfWeek() + day_index;
 
 		qDebug() << "SERVICE: num_of_days = " << num_of_days;
-		int from_interval = H24_MSEC*num_of_days + getMsec(set.from) - getMsec(QDateTime::currentDateTime());
-
-		if(from_interval < 0)
-		{
-     		setBedsideMode();
+		if(getMsec(QDateTime::currentDateTime()) < H24_MSEC/2 && num_of_days == 0 &&
+		   (getMsec(QDateTime::currentDateTime()) - getMsec(set.to)) < 0 ) {
+			setBedsideMode();
 		}
 		else {
-			timer->stop();
-	   		timer->start(from_interval);
+		    int from_interval = H24_MSEC*num_of_days + getMsec(set.from) - getMsec(QDateTime::currentDateTime());
+
+    		if(from_interval < 0)
+     	    	setBedsideMode();
+		    else {
+			    timer->stop();
+	   		    timer->start(from_interval);
+		    }
+		    qDebug() << "SERVICE: from_interval = " << from_interval << getMsec(set.from) << getMsec(QDateTime::currentDateTime());
+		    qDebug() << "SERVICE: from = " << set.from.toString();
+		    qDebug() << "SERVICE: current = " << QDateTime::currentDateTime().toString();
 		}
-		qDebug() << "SERVICE: from_interval = " << from_interval << getMsec(set.from) << getMsec(QDateTime::currentDateTime());
-		qDebug() << "SERVICE: from = " << set.from.toString();
-		qDebug() << "SERVICE: current = " << QDateTime::currentDateTime().toString();
 	}
 	else {
 		if(getMsec(QDateTime::currentDateTime()) > H24_MSEC/2 &&
@@ -247,6 +254,7 @@ void BedsideManagerService::init() {
 	timer = new QTimer(this);
 	hourly_timer = new QTimer(this);
 
+	settings.setValue(m_serviceStatus, "running");
 	// Force the creation of the settings file so that we can watch it for changes.
 	settings.sync();
 
@@ -312,9 +320,16 @@ void BedsideManagerService::saveCurrentPhoneSettings() {
 	BedsideSettings actual_settings = getActualSettings();
 
 	restore_settings.isActive = false;
-	restore_settings.mode = globalsettings.mode();
 	restore_settings.from = actual_settings.from;
 	restore_settings.to = actual_settings.to;
 
+	switch (globalsettings.mode()) {
+        case NotificationMode::Normal: restore_settings.mode = 0; break;
+	    case NotificationMode::Silent: restore_settings.mode = 1; break;
+	    case NotificationMode::Vibrate: restore_settings.mode = 2; break;
+	    case NotificationMode::PhoneOnly: restore_settings.mode = 3; break;
+	    case NotificationMode::AlertsOff: restore_settings.mode = 4; break;
+	    default: restore_settings.mode = 0; break;
+	}
 	qDebug() << "SERVICE: saveCurrentPhoneSettings()" << globalsettings.mode() ;
 }
