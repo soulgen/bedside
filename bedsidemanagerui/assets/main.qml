@@ -9,6 +9,7 @@ Page {
     property alias monitoring_checked: monitoringStatus.checked
     property alias mode_index: mode.selectedIndex
     property alias from_value: from.value
+    property alias from_min: from.minimum
     property alias to_value: to.value
 
     Container {
@@ -206,7 +207,7 @@ Page {
                                 verticalAlignment: VerticalAlignment.Center
                                 mode: DateTimePickerMode.Time
                                 minuteInterval: 1
-                                title: "From"
+                                title: "Begin:"
                                 value: _app.getTimeFrom()
                                 onValueChanged: {
                                     _app.setTimeFrom(value)
@@ -223,7 +224,7 @@ Page {
                                 verticalAlignment: VerticalAlignment.Center
                                 mode: DateTimePickerMode.Time
                                 minuteInterval: 1
-                                title: "To"
+                                title: "End:"
                                 value: _app.getTimeTo()
                                 onValueChanged: {
                                     _app.setTimeTo(value)

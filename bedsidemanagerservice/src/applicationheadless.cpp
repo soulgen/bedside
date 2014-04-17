@@ -107,13 +107,8 @@ void BedsideManagerService::settingsChanged(const QString & path) {
 		{
 			int current_time = getMsec(QDateTime::currentDateTime());
 
-			if(current_time > H24_MSEC/2 && current_time < H24_MSEC &&
-			   (getMsec(set.from) - current_time > 0)) {
+			if(current_time > getMsec(set.to) || current_time < getMsec(set.from))
 				setBedsideMode();
-			}
-			else if(current_time - getMsec(set.to) > 0){
-				setBedsideMode();
-			}
 		}
 
 	    updateMonitoring();
@@ -136,43 +131,58 @@ void BedsideManagerService::updateMonitoring()
 		int num_of_days = day_index - QDate::currentDate().dayOfWeek();
 		if(num_of_days < 0 && day_index == 0)
 			num_of_days = 0;
-		else if(num_of_days == -1 && getMsec(QDateTime::currentDateTime()) < H24_MSEC/2) {
-			num_of_days = 0;
-		}
+//		else if(num_of_days == -1 && getMsec(QDateTime::currentDateTime()) < H24_MSEC/2) {
+//			num_of_days = 0;
+//		}
 		else if(num_of_days < 0)
 			num_of_days = 7 - QDate::currentDate().dayOfWeek() + day_index;
 
 		qDebug() << "SERVICE: num_of_days = " << num_of_days;
-		if(getMsec(QDateTime::currentDateTime()) < H24_MSEC/2 && num_of_days == 0 &&
-		   (getMsec(QDateTime::currentDateTime()) - getMsec(set.to)) < 0 ) {
-			setBedsideMode();
-		}
-		else {
-		    int from_interval = H24_MSEC*num_of_days + getMsec(set.from) - getMsec(QDateTime::currentDateTime());
+//		if(getMsec(QDateTime::currentDateTime()) < H24_MSEC/2 && num_of_days == 0 &&
+//		   (getMsec(QDateTime::currentDateTime()) - getMsec(set.to)) < 0 ) {
+//			setBedsideMode();
+//		}
+//		else {
 
-    		if(from_interval < 0)
+		    int current_time = getMsec(QDateTime::currentDateTime());
+		    int from_interval = 0;
+
+    		if(current_time > getMsec(set.from) && current_time < getMsec(set.to))
      	    	setBedsideMode();
-		    else {
+		    else if(current_time > getMsec(set.from) &&	current_time > getMsec(set.to) && num_of_days == 0) {
+		    	from_interval = H24_MSEC - current_time + getMsec(set.from);
+		    	timer->stop();
+		    	timer->start(from_interval);
+		    }
+		    else
+		    {
+		    	from_interval = H24_MSEC*num_of_days + getMsec(set.from) - current_time;
 			    timer->stop();
 	   		    timer->start(from_interval);
 		    }
-		    qDebug() << "SERVICE: from_interval = " << from_interval << getMsec(set.from) << getMsec(QDateTime::currentDateTime());
+		    qDebug() << "SERVICE: from_interval = " << from_interval << getMsec(set.from) << current_time;
 		    qDebug() << "SERVICE: from = " << set.from.toString();
 		    qDebug() << "SERVICE: current = " << QDateTime::currentDateTime().toString();
-		}
+//		}
 	}
 	else {
-		if(getMsec(QDateTime::currentDateTime()) > H24_MSEC/2 &&
-		   getMsec(QDateTime::currentDateTime()) < H24_MSEC) {
-			timer->stop();
-			timer->start(H24_MSEC - getMsec(QDateTime::currentDateTime()) + getMsec(set.to));
-		}
-		else if((getMsec(QDateTime::currentDateTime()) - getMsec(set.to)) > 0){
+		if((getMsec(QDateTime::currentDateTime()) - getMsec(set.to)) > 0){
 			setBedsideMode();
 		}
 		else {
+            int to_interval = 0;
+
+			if(getMsec(set.to) < getMsec(set.from))
+			    to_interval = H24_MSEC - getMsec(QDateTime::currentDateTime()) + getMsec(set.to);
+			else
+				to_interval = getMsec(set.to) - getMsec(QDateTime::currentDateTime());
+
 			timer->stop();
-			timer->start(getMsec(set.to) - getMsec(QDateTime::currentDateTime()));
+			timer->start(to_interval);
+
+		    qDebug() << "SERVICE: to_interval = " << to_interval << getMsec(set.to) << getMsec(QDateTime::currentDateTime());
+		    qDebug() << "SERVICE: to = " << set.to.toString();
+		    qDebug() << "SERVICE: current = " << QDateTime::currentDateTime().toString();
 		}
 	}
 }
@@ -182,7 +192,11 @@ void BedsideManagerService::setBedsideMode()
 	qDebug() << "SERVICE: setBedsideMode()" << m_isBedsideModeActive;
 	if(!m_isBedsideModeActive) {
 		BedsideSettings set = getActualSettings();
-		int to_interval = H24_MSEC - getMsec(QDateTime::currentDateTime()) + getMsec(set.to);
+		int to_interval = 0;
+		if(getMsec(set.to) < getMsec(set.from))
+		    to_interval = H24_MSEC - getMsec(QDateTime::currentDateTime()) + getMsec(set.to);
+		else
+			to_interval = getMsec(set.to) - getMsec(QDateTime::currentDateTime());
 		qDebug() << "SERVICE: in Bedside to = " << to_interval;
 		timer->stop();
 		timer->start(to_interval);
@@ -211,10 +225,10 @@ BedsideSettings BedsideManagerService::getActualSettings()
     	return var.value<BedsideSettings>();
     }
     else {
-    	int index = QDate::currentDate().dayOfWeek();
-    	int current_hour = QTime::currentTime().hour();
-    	if(current_hour > 0 && current_hour < 12)
-    		--index;
+    	int index = day_index;
+    	if(!m_isBedsideModeActive)
+            index = QDate::currentDate().dayOfWeek();
+
     	for(int i = 1; i <= 7; ++i){
     	    switch(index) {
     	       case 1: var = settings.value(m_monday_settings); break;
