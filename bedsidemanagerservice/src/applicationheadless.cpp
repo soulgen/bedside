@@ -150,7 +150,7 @@ void BedsideManagerService::updateMonitoring()
 		   	timer->stop();
 		   	timer->start(from_interval);
 		}
-		else
+		else if(getMsec(set.from) != getMsec(set.to))
 		{
 		  	from_interval = H24_MSEC*num_of_days + getMsec(set.from) - current_time;
 		    timer->stop();
