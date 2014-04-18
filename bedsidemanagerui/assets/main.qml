@@ -137,6 +137,7 @@ Page {
 
                 Container {
                     id: settings
+                    enabled: isActive.checked
                     Container {
                         layout: DockLayout {
                         }

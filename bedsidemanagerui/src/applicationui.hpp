@@ -109,7 +109,6 @@ private:
     QFileSystemWatcher* settingsWatcher;
 
     BedsideSettings unsaved_settings;
-    BedsideSettings saved_settings;
 };
 
 #endif /* ApplicationUI_HPP_ */

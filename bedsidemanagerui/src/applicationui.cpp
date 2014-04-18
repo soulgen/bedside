@@ -163,8 +163,7 @@ bool BedsideManagerUI::getServiceStatus()
 
 void BedsideManagerUI::setServiceStatus(bool status)
 {
-    QSettings settings(m_author, m_appName);
-    if(saved_settings.isActive != status) {
+    if(getVisibleSettings().isActive != status) {
     	unsaved_settings.isActive = status;
     	enableButtons();
     }
@@ -180,7 +179,7 @@ int BedsideManagerUI::getNotificationMode()
 
 void BedsideManagerUI::setNotificationMode(int mode)
 {
-	if(saved_settings.mode != mode)	{
+	if(getVisibleSettings().mode != mode)	{
 	    unsaved_settings.mode = mode;
 	    enableButtons();
 	}
@@ -197,7 +196,8 @@ QDateTime BedsideManagerUI::getTimeFrom()
 
 void BedsideManagerUI::setTimeFrom(QDateTime from)
 {
-	if(saved_settings.from != from)	{
+	if(getVisibleSettings().from.time().hour() != from.time().hour() ||
+	   getVisibleSettings().from.time().minute() != from.time().minute())	{
 	    unsaved_settings.from = from;
 	    enableButtons();
 	}
@@ -214,8 +214,9 @@ QDateTime BedsideManagerUI::getTimeTo()
 
 void BedsideManagerUI::setTimeTo(QDateTime to)
 {
-	if(saved_settings.to != to)	{
-	    unsaved_settings.to = to;
+	if(getVisibleSettings().to.time().hour() != to.time().hour() ||
+	   getVisibleSettings().to.time().minute() != to.time().minute())	{
+		unsaved_settings.to = to;
 	    enableButtons();
 	}
 	else
@@ -243,7 +244,6 @@ void BedsideManagerUI::save()
     	}
     }
 
-    saved_settings = unsaved_settings;
     disableButtons();
 }
 
@@ -251,6 +251,7 @@ void BedsideManagerUI::cancel()
 {
 	updateLayoutFromSettings();
 	disableButtons();
+	unsaved_settings = getVisibleSettings();
 }
 
 void BedsideManagerUI::settingsChanged(const QString & path)
@@ -260,7 +261,7 @@ void BedsideManagerUI::settingsChanged(const QString & path)
 
     updateLayoutFromSettings();
 
-    saved_settings = unsaved_settings = getVisibleSettings();
+    unsaved_settings = getVisibleSettings();
 
     disableButtons();
 }
@@ -269,6 +270,7 @@ void BedsideManagerUI::updateLayoutFromSettings()
 {
 	BedsideSettings set = getVisibleSettings();
 
+	qDebug() << "UI: updateLayoutFromSettings() set.isActive = " << set.isActive;
     root->setProperty("isActive_checked", set.isActive);
     root->setProperty("mode_index", set.mode);
     root->setProperty("from_value", set.from);

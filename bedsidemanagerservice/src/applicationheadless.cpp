@@ -139,7 +139,11 @@ void BedsideManagerService::updateMonitoring()
 	    int current_time = getMsec(QTime::currentTime());
 	    int from_interval = 0;
 
-	    if(current_time > getMsec(set.from) && current_time < getMsec(set.to))
+	    if(getMsec(set.to) > getMsec(set.from) &&
+	       current_time > getMsec(set.from) && current_time < getMsec(set.to))
+     	   	setBedsideMode();
+	    else if(getMsec(set.to) < getMsec(set.from) &&
+	            current_time > getMsec(set.from) && current_time < H24_MSEC)
      	   	setBedsideMode();
 		else if(current_time > getMsec(set.from) &&	current_time > getMsec(set.to) && num_of_days == 0) {
 		  	from_interval = H24_MSEC - current_time + getMsec(set.from);
@@ -208,8 +212,6 @@ BedsideSettings BedsideManagerService::getActualSettings()
 	QSettings settings(m_author, m_appName);
 	NotificationGlobalSettings globalsettings;
 
-	BedsideSettings set = {false, globalsettings.mode(), QDateTime::currentDateTime(), QDateTime::currentDateTime() };
-
     if(settings.value(m_daily).toBool()) {
     	day_index = 0;
     	var = settings.value(m_daily_settings);
@@ -243,8 +245,9 @@ BedsideSettings BedsideManagerService::getActualSettings()
     }
 
     day_index = 0;
+    settings.setValue(m_daily, QVariant::fromValue(true));
     settings.setValue(m_monitoring_status, QVariant::fromValue(false));
-	return set;
+    return settings.value(m_daily_settings).value<BedsideSettings>();
 }
 
 int BedsideManagerService::getMsec(QDateTime data)
