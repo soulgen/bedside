@@ -75,6 +75,7 @@ public Q_SLOTS:
 
     void updateMonitoring();
     int getMsec(QDateTime);
+    int getMsec(QTime);
     void saveCurrentPhoneSettings();
     void setPhoneSettings();
     void setBedsideMode();
