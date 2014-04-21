@@ -62,9 +62,11 @@ const QString BedsideManagerService::m_serviceStatus = "ServiceStatus";
 using namespace bb::system;
 using namespace bb::platform;
 
-BedsideManagerService::BedsideManagerService(bb::Application *app) :
+BedsideManagerService::BedsideManagerService(bb::Application *app):
 		QObject(app),
 		m_invokeManager(new InvokeManager(this)),
+		timer(new QTimer(this)),
+		hourly_timer(new QTimer(this)),
 		m_settingsWatcher(new QFileSystemWatcher(this)),
 		m_isBedsideModeActive(false)
 {
@@ -142,10 +144,10 @@ void BedsideManagerService::updateMonitoring()
 	    if(getMsec(set.to) > getMsec(set.from) &&
 	       current_time > getMsec(set.from) && current_time < getMsec(set.to))
      	   	setBedsideMode();
-	    else if(getMsec(set.to) < getMsec(set.from) &&
+	    else if(getMsec(set.to) <= getMsec(set.from) &&
 	            current_time > getMsec(set.from) && current_time < H24_MSEC)
      	   	setBedsideMode();
-		else if(getMsec(set.to) >= getMsec(set.from) &&	current_time > getMsec(set.to) && num_of_days == 0) {
+		else if(getMsec(set.to) > getMsec(set.from) &&	current_time > getMsec(set.to) && num_of_days == 0) {
 		  	from_interval = H24_MSEC - current_time + getMsec(set.from);
 		   	timer->stop();
 		   	timer->start(from_interval);
@@ -189,7 +191,7 @@ void BedsideManagerService::setBedsideMode()
 	if(!m_isBedsideModeActive) {
 		BedsideSettings set = getActualSettings();
 		int to_interval = 0;
-		if(getMsec(set.to) < getMsec(set.from))
+		if(getMsec(set.to) <= getMsec(set.from))
 		    to_interval = H24_MSEC - getMsec(QTime::currentTime()) + getMsec(set.to);
 		else
 			to_interval = getMsec(set.to) - getMsec(QTime::currentTime());
@@ -265,8 +267,6 @@ int BedsideManagerService::getMsec(QTime time)
 void BedsideManagerService::init() {
 	// set the initial qsettings keys/values upon startup
 	QSettings settings(m_author, m_appName);
-	timer = new QTimer(this);
-	hourly_timer = new QTimer(this);
 
 	settings.setValue(m_serviceStatus, "running");
 	// Force the creation of the settings file so that we can watch it for changes.

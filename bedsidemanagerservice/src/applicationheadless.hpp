@@ -66,23 +66,18 @@ public Q_SLOTS:
      */
     void settingsChanged(const QString & path);
 
-    /**
-     * Method invoked when a activeChanged() signal is
-     * received from the Led instance, indicating
-     * a led state change.
-     */
     void init();
 
     void updateMonitoring();
+    void setBedsideMode();
+
+private:
     int getMsec(QDateTime);
     int getMsec(QTime);
     void saveCurrentPhoneSettings();
     void setPhoneSettings();
-    void setBedsideMode();
-
     BedsideSettings getActualSettings();
 
-private:
     // Invocation Manager instance for receiving system events
     bb::system::InvokeManager *m_invokeManager;
     QTimer *timer;
