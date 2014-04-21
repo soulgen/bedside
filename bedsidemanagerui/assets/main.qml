@@ -13,6 +13,8 @@ Page {
     property alias to_value: to.value
 
     Container {
+        id: main
+        visible: false
         topPadding: 20.0
         background: back.imagePaint
         attachedObjects: [
@@ -31,7 +33,7 @@ Page {
             leftPadding: 10.0
             rightPadding: 10.0
             Label {
-                text: "Monitoring"
+                text: "Bedside Manager"
                 verticalAlignment: VerticalAlignment.Center
                 textStyle.fontSize: FontSize.Medium
             }
@@ -265,5 +267,8 @@ Page {
                 }
             }
         }
+    onCreationCompleted: {
+        main.visible = true
+    }
 }
 

@@ -80,6 +80,7 @@ public Q_SLOTS:
 private:
 
     void init();
+    bool nothingHasChanged();
     BedsideSettings getDefaultValues();
     BedsideSettings getVisibleSettings();
     void updateLayoutFromSettings();

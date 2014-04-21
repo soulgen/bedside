@@ -167,7 +167,7 @@ void BedsideManagerUI::setServiceStatus(bool status)
     	unsaved_settings.isActive = status;
     	enableButtons();
     }
-    else
+    else if(nothingHasChanged())
     	disableButtons();
 }
 
@@ -183,7 +183,7 @@ void BedsideManagerUI::setNotificationMode(int mode)
 	    unsaved_settings.mode = mode;
 	    enableButtons();
 	}
-	else
+	else if(nothingHasChanged())
 		disableButtons();
 
     qDebug() << "UI: setNotificationMode(" << mode << ")";
@@ -201,7 +201,7 @@ void BedsideManagerUI::setTimeFrom(QDateTime from)
 	    unsaved_settings.from = from;
 	    enableButtons();
 	}
-	else
+	else if(nothingHasChanged())
 		disableButtons();
 
     qDebug() << "UI: setTimeFrom(" << from.toString() << ")";
@@ -219,7 +219,7 @@ void BedsideManagerUI::setTimeTo(QDateTime to)
 		unsaved_settings.to = to;
 	    enableButtons();
 	}
-	else
+	else if(nothingHasChanged())
 		disableButtons();
 
     qDebug() << "UI: setTimeTo(" << to.toString() << ")";
@@ -275,6 +275,21 @@ void BedsideManagerUI::updateLayoutFromSettings()
     root->setProperty("mode_index", set.mode);
     root->setProperty("from_value", set.from);
     root->setProperty("to_value", set.to);
+}
+
+bool BedsideManagerUI::nothingHasChanged()
+{
+	BedsideSettings set = getVisibleSettings();
+
+    if(unsaved_settings.from.time().hour() != set.from.time().hour() ||
+       unsaved_settings.from.time().minute() != set.from.time().minute() ||
+       unsaved_settings.to.time().hour() != set.to.time().hour() ||
+       unsaved_settings.to.time().minute() != set.to.time().minute() ||
+       unsaved_settings.mode != set.mode ||
+       unsaved_settings.isActive != set.isActive)
+        return false;
+    else
+        return true;
 }
 
 BedsideSettings BedsideManagerUI::getVisibleSettings()
