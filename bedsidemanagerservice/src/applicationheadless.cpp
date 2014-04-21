@@ -182,6 +182,7 @@ void BedsideManagerService::updateMonitoring()
 		    qDebug() << "SERVICE: to = " << set.to.toString();
 		    qDebug() << "SERVICE: current = " << QDateTime::currentDateTime().toString();
 		}
+		setPhoneSettings();
 	}
 }
 
