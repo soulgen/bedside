@@ -26,7 +26,7 @@
 
     <!-- A universally unique application identifier. Must be unique across all BlackBerry 10 applications.
          Using a reverse DNS-style name as the id is recommended. (Eg. com.example.ExampleApplication.) Required. -->
-    <id>com.example.bedsidemanager</id>
+    <id>com.app.bedsidemanager</id>
 
     <!-- The name that is displayed in the BlackBerry 10 application installer. 
          May have multiple values for each language. See samples or xsd schema file. Optional. -->
@@ -40,7 +40,7 @@
     <!-- Fourth digit segment of the package version. First three segments are taken from the 
          <versionNumber> element.  Must be an integer from 0 to 2^16-1 -->
     <buildId>1</buildId>
-    <author>SymphonyTeleca</author>
+    <author>Soulgen</author>
                  
     <!-- A string value (such as "v1", "2.5", or "Alpha 1") that represents the version of the application, as it should be shown to users. Optional. -->
     <!-- <versionLabel></versionLabel> -->
@@ -107,7 +107,7 @@
         <entryPointType>Qnx/Elf</entryPointType>        
     </entryPoint> 
     
-    <invoke-target id="com.example.bedsidemanagerservice">
+    <invoke-target id="com.app.bedsidemanagerservice">
       <invoke-target-type>application.headless</invoke-target-type>
        <invoke-target-name>Bedsidemanager Service</invoke-target-name>
        <entry-point-id>Bedsidemanagerservice</entry-point-id>
